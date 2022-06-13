@@ -1,0 +1,94 @@
+******* P02 COMPORTAMIENTO AUTOMATICO ******
+
+// EX1 LA FABRICA DE EMPANADAS
+
+Se quiere especificar el comportamiento de una fabrica de empanadas que esta totalmente
+automatizada. A medida que se encuentran listas, las empanadas van saliendo de una maquina 
+una a una y son depositadas en una caja para empanadas. En la caja caben 12 empanadas
+y cuando esta se llena, es automaticamente despachada y reemplazada por una caja vacia.
+Se quiere saber cuantas cajas de empanadas se despacharon en total y cuantas empanadas hay 
+en la caja que esta actualmente abierta.
+
+TAD Fabrica
+Géneros:	fabrica
+Observadores Básicos:
+	cantEnCaja: fabrica -> nat n {n<12}
+	#despachadas: fabrica -> nat
+	
+Generadores:
+	nuevaFab: -> fabrica
+	caeEmpanada: fabrica -> fabrica
+	
+Axiomas:
+	cantEnCaja(nuevaFab) ≡ 0
+	cantEncaja(caeEmpanada(f)) ≡ if cantEnCaja = 11 then 0 else 1 + cantEnCaja(f) fi
+	
+	#despachadas(nuevaFab) ≡ 0
+	#despachadas(caeEmpanada(f)) ≡ if cantEnCaja = 11 then 1 + #despachadas(f) else #despachadas(f) fi
+Fin TAD
+
+// EX2 EL ASCENSOR INUTIL
+
+Se quiere especificar el comportamiento de un ascensor que lleva personas entre dos pisos. La
+capacidad maxima del ascensor es de 3 personas. El ascensor se pone en funcionamiento cuando ingresan
+3 personas, sin necesidad de apretar ningun boton. Cuando el ascensor se pone en movimiento, se
+desplaza del piso en el que esta hacia el otro. En cuanto llega al piso de destino, las personas
+que estan en el interior del ascensor lo desocupan inmendiatamente. En cualquier momento pueden
+llegar personas a cualquiera de los dos pisos. En el caso que el ascensor no esté, las personas
+forman una fila y esperan a que el ascensor las venga a buscar.
+
+Se quiere saber en que piso esta el ascensor y la cantidad de personas esperando en cada piso.
+
+
+TAD Piso
+Géneros:	piso
+Observadores Básicos:
+	(...)
+Generadores:
+	A: -> piso
+	B: -> piso
+Otras Operaciones:
+	otroPiso: piso -> piso
+Axiomas:
+	otroPiso(A) ≡ B
+	otroPiso(B) ≡ A
+Fin TAD
+
+TAD personas ES nat
+
+TAD Ascensor
+Géneros:	ascensor
+Observadores Básicos:
+	piso?: ascensor -> piso
+	#personasEsperandoEn: ascensor × piso -> nat
+Generadores:
+	nuevoAscensor: -> ascensor
+	llegaPersona: ascensor × piso -> ascensor
+Axiomas:
+	piso?(nuevoAscensor) ≡ A
+	piso?(llegaPersona(a, p)) ≡ if #personasEsperandoEn(a,p) = 2 ∧ piso?(ascensor) = p then
+																if #personasEsperandoEn(a,otroPiso(p)) > 2 then
+																		piso?(a) else otroPiso(p) fi
+															else piso?(a) fi
+  #personasEsperanEn(nuevoAscensor, p) ≡ 0
+	#personasEsperanEn(llegaPersona(a,p), p') ≡ if #personasEsperandoEn(a,p) = 2 ∧ piso?(ascensor) = p then
+																								if piso?(a) = p' then
+																									0 else if #personasEsperandoEn(a,p') > 2 then 
+																													#personasEsperanEn(a,p') - 3 
+																													else #personasEsperanEn(a,piso?(a)) fi
+																							else #personasEsperanEn(a,p') + β(p = p') fi 
+Fin TAD 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

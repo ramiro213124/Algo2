@@ -1,0 +1,1021 @@
+// Práctica 1 - Ejercicio 1
+
+TAD SecuenciaExtendida(α)
+    extiende
+        Secuencia(α)
+    otras operaciones
+        duplicar: secu(α) → secu(α)
+        • ≤ •: secu(α) × secu(α) → bool
+        reverso: secu(α) → secu(α)
+        capicúa: secu(α) → bool
+        esPrefijo?: secu(α) × secu(α) → bool
+        buscar: secu(α) × secu(α) → nat
+        estáOrdenada?: secu(α) → bool
+        insertarOrdenada: secu(α) × a → secu(α)
+        cantidadApariciones: secu(α) × a → nat
+        mismaCantidadApariciones: secu(α) × secu(α) × secu(α) → bool
+        esPermutación?: secu(α) × secu(α) → bool
+        combinar: secu(α) s × secu(α) t → secu(α) {estáOrdenada?(s) ∧ estáOrdenada?(t)}
+    axiomas
+        duplicar(s) ≡ if vacía?(s) then <> else prim(s) • prim(s) • duplicar(fin(s)) fi
+        s ≤ t ≡ if vacía?(s) ∨ vacía?(t) then vacía?(s) else prim(s) ≤ prim(t) ∧ fin(s) ≤ fin(t) fi
+        reverso(s) ≡ if vacía?(s) then <> else reverso(s) ∘ prim(s) fi
+        capicúa(s) ≡ vacía?(s) ∨ prim(s) = ult(s) ∧ capicúa(com(fin(s)))
+        esPrefijo?(s, t) ≡ if vacía?(s) ∨ vacía?(t) then vacía?(s) else prim(s) = prim(t) ∧ esPrefijo(fin(s), fin(t)) fi
+        buscar(s, t) ≡ if esPrefijo(s, t) then 0 else buscar(s, fin(t)) fi
+        estáOrdenada?(s) ≡ long(s) < 2 ∨ prim(s) < prim(fin(s)) ∧ estáOrdenada?(fin(s))
+        insertarOrdenada(s, e) ≡ if vacía?(s) ∨ e < prim(s) then e • s else prim(s) • insertarOrdenada(fin(s), e) fi
+        cantidadApariciones(s, e) ≡ if vacía?(s) then 0 else
+            (if prim(s) = e then 1 else 0 fi) + cantidadApariciones(fin(s), e)
+        fi
+        mismaCantidadApariciones(s, t, u) = vacía?(u)
+            ∨ cantidadApariciones(s, prim(u)) = cantidadApariciones(t, prim(u))
+            ∧ mismaCantidadApariciones(s, t, fin(u))
+        esPermutación?(s, t) ≡ long(s) = long(t) ∧ mismaCantidadApariciones(s, t, s)
+        combinar(<>, <>) ≡ <>
+        combinar(x • s, <>) ≡ x • s
+        combinar(<>, y • t) ≡ y • t
+        combinar(x • s, y • t) ≡ if x < y then x • combinar(s, y • t) else y • combinar(x • s, t) fi
+Fin TAD
+
+// Práctica 1 - Ejercicio 2
+
+
+
+TAD ArbolBinarioExtendido(α)
+    extiende
+        ArbolBinario(α)
+    otras operaciones
+        esHoja?: ab(α) → bool
+        #hojas: ab(α) → nat
+        degeneradoAIzquierda: ab(α) → bool
+        degeneradoADerecha: ab(α) → bool
+        zigZag: ab(α) → bool
+        últimoNivelCompleto: ab(α) → nat
+        espejo: ab(α) → ab(α)
+        esSimétrico: ab(α) × ab(α) → bool
+    axiomas
+			esHoja?(a) ≡ if nil?(a) then false else nil?(izq(a)) ∧ nil?(der(a))
+			#hojas(a) ≡ if (nil?(a)) then
+									 		0
+									 	else if nil?(izq(a)) ∧ nil?(der(a)) then 
+													1 
+														else #hojas(izq(a)) + #hojas(der(a))
+													fi
+									fi
+		degeneradoAIzquierda(a) ≡ if nil?(a) then true else 
+																if nil?(der(a)) ∧ ¬nil?(izq(a)) ∧  degeneradoAIzquierda(izq(a)) then true
+																		else false
+																		fi
+															fi
+		zigZag(ab) ≡ if nil?(a) then true else 
+																if nil?(der(a)) ∧ ¬nil?(izq(a)) ∧  zigZag(izq(a)) then true
+																		else false
+																		fi
+															fi
+	 ultimoNivelCompleto(a) ≡ if nil?(a) then a else if
+					
+        esHoja?(a) ≡ ¬nil?(a) ∧ nil?(izq(a)) ∧ nil?(der(a))
+        #hojas(a) ≡ if nil?(a) then 0 else β(esHoja?(a)) + #hojas(izq(a)) + #hojas(der(a)) fi
+        degeneradoAIzquierda(a) ≡ nil?(a) ∨ esHoja?(a) ∨ (degeneradoAIzquierda(izq(a)) ∧ nil?(der(a)))
+        degeneradoADerecha(a) ≡ nil?(a) ∨ esHoja?(a) ∨ (degeneradoADerecha(izq(a) ∧ nil?(der(a)))
+        zigZag(a) ≡ nil?(a) ∨ esHoja?(a)
+            // Este choclo lógico en esencia lo que chequea son los próximos 2 niveles al mismo tiempo.
+            ∨ (¬nil?(izq(a)) ∧ nil?(der(a)) ∧ (esHoja?(izq(a)) ∨ (nil?(izq(izq(a))) ∧ ¬nil?(der(izq(a))) ∧ zigZag(izq(a)))))
+            ∨ (nil?(izq(a)) ∧ ¬nil?(der(a)) ∧ (esHoja?(der(a)) ∨ (¬nil?(izq(der(a))) ∧ nil?(der(der(a))) ∧ zigZag(der(a)))))
+        últimoNivelCompleto(a) ≡ if nil?(a) then 0 else
+            1 + min(últimoNivelCompleto(izq(a)), últimoNivelCompleto(der(a)))
+        fi
+        espejo(a) ≡ if nil?(a) then a else bin(espejo(der(a)), raíz(a), espejo(izq(a))) fi
+        esSimétrico(a, b) ≡ a =obs espejo(b)
+Fin TAD
+
+// Ex 3
+
+def dameUno(c):
+    return c[0]
+
+def sinUno(c):
+    return c[1:]
+
+def partesDe(c):
+    if not c: return [[]]
+    return agregarATodos(dameUno(c), partesDe(sinUno(c))) + partesDe(sinUno(c))
+
+def agregarATodos(e, cs):
+    if not cs: return []
+    return [*agregarATodos(e, sinUno(cs)), [*dameUno(cs), e]]
+
+def combinacionesDeK(c, k):
+    if k == 0: return [[]]
+    if k > len(c): return []
+    return agregarATodos(dameUno(c), combinacionesDeK(sinUno(c), k - 1)) + combinacionesDeK(sinUno(c), k)
+
+print(partesDe([1,2,3])) # [[1], [3, 1], [3, 2, 1], [2, 1], [2], [3, 2], [3], []]
+print(combinacionesDeK([1,2,3], 2)) # [[3, 1], [2, 1], [3, 2]]
+
+// Práctica 1 - Ejercicio 3
+
+TAD ConjuntoExtendido(α)
+    extiende
+        Conjunto(α)
+    otras operaciones
+        partesDe: conj(α) → conj(conj(α))
+        agregarATodos: α × conj(conj(α)) → conj(conj(α))
+        combinacionesDeK: conj(α) c × nat k → conj(conj(α))
+    axiomas
+        partesDe(c) ≡ if ∅?(c) then Ag(c, ∅) else
+            agregarATodos(dameUno(c), partesDe(sinUno(c))) ∪ partesDe(sinUno(c))
+        fi
+        agregarATodos(e, cs) ≡ if ∅?(cs) then ∅ else
+            Ag(Ag(e, dameUno(cs)), agregarATodos(e, sinUno(cs)))
+        fi
+        combinacionesDeK(c, k) ≡ if k = 0 then Ag(∅, ∅) else
+            if k > #c then ∅ else
+                agregarATodos(dameUno(c), combinacionesDeK(sinUno(c), k - 1)) ∪ combinacionesDeK(sinUno(c), k)
+            fi
+        fi
+Fin TAD
+
+// Ex 4
+def prim(s):
+    return s[0]
+
+def fin(s):
+    return s[1:]
+
+def Ag(e, c):
+    return [e, *c]
+
+def dameUno(c):
+    return c[0]
+
+def sinUno(c):
+    return c[1:]
+
+def dameSubSecuencias(c, s):
+    if not c: return []
+    if esSubSecuencia(dameUno(c), s):
+        return Ag(dameUno(c), dameSubSecuencias(sinUno(c), s))
+    else:
+        return dameSubSecuencias(sinUno(c), s)
+
+def esSubSecuencia(s, t):
+    if not s or not t:
+        return not s
+    if s[0] == t[0]:
+        return esSubSecuencia(s[1:], t[1:])
+    return esSubSecuencia(s, t[1:])
+
+def sinPrefijos(c, d):
+    if not c: return []
+    if esPrefijoDeOtra(dameUno(c), d):
+        return sinPrefijos(sinUno(c), d)
+    else:
+        return Ag(dameUno(c), sinPrefijos(sinUno(c), d))
+
+def esPrefijo(s, t):
+    if not s or not t:
+        return not s
+    else:
+        return prim(s) == prim(t) and esPrefijo(fin(s), fin(t))
+
+def esPrefijoDeOtra(s, c):
+    if not c: return False
+    return (s != dameUno(c) and esPrefijo(s, dameUno(c))) or esPrefijoDeOtra(s, sinUno(c))
+
+def NTN(c, s):
+    return sinPrefijos(dameSubSecuencias(c, s), c)
+
+s = [7,1,5,7,2,4,9]
+print(NTN([[7,5,2]], s) == [[7,5,2]])
+print(NTN([[7,5,2],[7,5]], s) == [[7,5,2]])
+print(NTN([[7,5,2],[7,5],[7,7,9]], s) == [[7,5,2],[7,7,9]])
+print(NTN([[7,5,2],[7,5],[7,7,9],[7,7]], s) == [[7,5,2],[7,7,9]])
+print(NTN([[]], s) == [[]])
+print(NTN([[],[7,7]], s) == [[7,7]])
+print(NTN([[7,5],[7,5,2],[7,7],[7,7,9]], s) == [[7,5,2],[7,7,9]])
+
+// Práctica 1 - Ejercicio 4
+
+TAD SecuenciaExtendida2(α)
+    extiende
+        SecuenciaExtendida(α)
+    otras operaciones
+        NTN: conj(secu(α)) × secu(α) → conj(secu(α))
+        dameSubSecuencias: conj(secu(α)) × secu(α) → conj(secu(α))
+        esSubSecuencia: secu(α) × secu(α) → bool
+        sinPrefijos: conj(secu(α)) × conj(secu(α)) → conj(secu(α))
+        esPrefijoDeOtra: secu(α) × conj(secu(α)) → bool
+    axiomas
+        NTN(c, s) ≡ sinPrefijos(dameSubSecuencias(c, s), c)
+        dameSubSecuencias(c, s) ≡
+            if ∅?(c) then ∅ else
+                if esSubSecuencia(dameUno(c), s)
+                    Ag(dameUno(c), dameSubSecuencias(sinUno(c), s))
+                else
+                    dameSubSecuencias(sinUno(c), s)
+                fi
+            fi
+        esSubSecuencia(s, t) ≡
+            if vacía?(s) ∨ vacía?(t) then
+                vacía(s)
+            else
+                if prim(s) = prim(t) then
+                    esSubSecuencia(fin(s), fin(t))
+                else
+                    esSubSecuencia(s, fin(t))
+                fi
+            fi
+        sinPrefijos(c, d) ≡
+            if ∅?(c) then ∅ else
+                if esPrefijoDeOtra(dameUno(c), d) then
+                    sinPrefijos(sinUno(c), d)
+                else
+                    Ag(dameUno(c), sinPrefijos(sinUno(c), d))
+                fi
+            fi
+        esPrefijoDeOtra(s, c) ≡
+            if ∅?(c) then
+                false
+            else
+                (s ≠ dameUno(c) ∧ esPrefijo?(s, dameUno(c))) ∨ esPrefijoDeOtra(s, sinUno(c))
+            fi
+Fin TAD
+
+// Ex 5
+from dataclasses import dataclass
+from typing import Any
+
+
+@dataclass
+class ArbolTernario:
+    raiz: Any
+    izq: 'ArbolTernario' = None
+    med: 'ArbolTernario' = None
+    der: 'ArbolTernario' = None
+
+at = ArbolTernario
+
+
+def nil(a):
+    return not a
+
+def izq(a):
+    return a.izq
+
+def med(a):
+    return a.med
+
+def der(a):
+    return a.der
+
+def nivelNormal(a, k):
+    if k == 0:
+        return not nil(a) and not nil(izq(a)) and not nil(med(a)) and not nil(der(a))
+    return (nil(izq(a)) or nivelNormal(izq(a), k - 1)) \
+        and (nil(med(a)) or nivelNormal(med(a), k - 1) ) \
+        and (nil(der(a)) or nivelNormal(der(a), k - 1))
+
+def altura(a):
+    if nil(a):
+        return 0
+    return 1 + max(altura(izq(a)), altura(med(a)), altura(der(a)))
+
+def acotado(a, k):
+    return acotadoPorNivel(a, k, altura(a) - 1)
+
+def acotadoPorNivel(a, k, n):
+    return (n == 0 and k >= 1) or (contarNodosEnNivel(a, n) <= k and acotadoPorNivel(a, k, n - 1))
+
+def contarNodosEnNivel(a, n):
+    if n == 0 or nil(a):
+        return int(not nil(a))
+    return contarNodosEnNivel(izq(a), n - 1) \
+        + contarNodosEnNivel(med(a), n - 1) \
+        + contarNodosEnNivel(der(a), n - 1)
+
+def contarNodos(a):
+    if nil(a):
+        return 0
+    return int(not nil(izq(a))) + int(not nil(med(a))) + int(not nil(der(a)))
+
+a = at(1, at(2, at(21), at(22), at(23)), at(3, at(31), at(32), at(33)), at(4, at(41), at(42), at(43)))
+b = at(1, at(2, None, at(22), at(23)), at(3, at(31), at(32), at(33)), at(4, at(41), at(42), at(43)))
+c = at(1, None, at(2, at(31), at(31), at(33)), None)
+print(nivelNormal(a, 0) == True)
+print(nivelNormal(a, 1) == True)
+print(nivelNormal(a, 2) == False)
+print(nivelNormal(b, 1) == False)
+print(nivelNormal(c, 0) == False)
+print(nivelNormal(c, 1) == True)
+print(nivelNormal(c, 2) == False)
+print(acotado(a, 1) == False)
+print(acotado(a, 3) == False)
+print(acotado(a, 9) == True)
+print(acotado(c, 3) == True)
+
+// Práctica 1 - Ejercicio 5
+
+TAD ArbolTernarioExtendido(α)
+    extiende
+        ArbolTernario(α)
+    otras operaciones
+        altura: at(α) → nat
+        nivelNormal: at(α) × nat → bool
+        acotado?: at(α) × nat → bool
+        acotadoPorNivel: at(α) × nat × nat → bool
+        contarNodosEnNivel: at(α) × nat → nat
+    axiomas
+        altura(a) ≡
+            if nil?(a) then
+                0
+            else
+                1 + max(altura(izq(a)), altura(med(a)), altura(der(a)))
+            fi
+        nivelNormal(a, k) ≡
+            if k = 0 then
+                ¬nil?(a) ∧ ¬nil?(izq(a)) ∧ ¬nil?(med(a)) ∧ ¬nil?(der(a))
+            else
+                (nil?(izq(a)) ∨ nivelNormal(izq(a), k - 1))
+                ∧ (nil?(med(a)) ∨ nivelNormal(med(a), k - 1))
+                ∧ (nil?(der(a)) ∨ nivelNormal(der(a), k - 1))
+            fi
+        acotado?(a, k) ≡ acotadoPorNivel(a, k, altura(a) - 1)
+        acotadoPorNivel(a, k, n) ≡
+            (n = 0 ∧ k ≥ 1) ∨ (contarNodosEnNivel(a, n) ≤ k ∧ acotadoPorNivel(a, k, n - 1))
+        contarNodosEnNivel(a, n) ≡
+            if n = 0 ∨ nil?(a) then
+                β(¬nil?(a))
+            else
+                contarNodosEnNivel(izq(a), n - 1)
+                + contarNodosEnNivel(med(a), n - 1)
+                + contarNodosEnNivel(der(a), n - 1)
+            fi
+Fin TAD
+
+// Práctica 1 - Ejercicio 6
+
+TAD RosetreeExtendido(α)
+    extiende
+        Rosetree(α)
+    otras operaciones
+        hoja?: rosetree(α) → bool
+        altura: rosetree(α) → nat
+        alturaDeHijos: secu(rosetree(α)) s → nat {¬vacía?(s)}
+        #hojas: rosetree(α) → nat
+        #hojasDeHijos: secu(rosetree(α)) s → nat {¬vacía?(s)}
+        podar: rosetree(α) a → rosetree(α) {altura(a) > 1}
+        podarHijos: secu(rosetree(α)) → secu(rosetree(α))
+    axiomas
+        hoja?(a) ≡ vacía?(hijos(a))
+        altura(a) ≡ 1 + if hoja?(a) then 0 else alturaDeHijos(hijos(a)) fi
+        alturaDeHijos(s) ≡ if vacía?(fin(s)) then altura(prim(s)) else max(altura(prim(s)), alturaDeHijos(fin(s))) fi
+        #hojas(a) ≡ if hoja?(a) then 1 else #hojasDeHijos(hijos(a)) fi
+        #hojasDeHijos(s) ≡ #hojas(prim(s)) + #hojasDeHijos(fin(s))
+        podar(a) ≡ rose(raíz(a), podarHijos(hijos(a)))
+        podarHijos(s) ≡ if vacía?(s) then <> else
+            if hoja?(prim(s)) then podarHijos(fin(s)) else podar(prim(s)) • podarHijos(fin(s)) fi
+        fi
+Fin TAD
+
+
+// Ex 7
+TAD Polinomio
+Géneros:	polinomio
+Igualdad Observacional:	
+	(∀p1,p2:polinomio) p1 =obs p2 ↔ (∀n:nat)(evaluar(p1,n)=evaluar(p2,n))
+Observadores Básicos:
+	evaluar: polinomio × nat -> nat
+Generadores:
+	cte: nat -> polinomio
+	x: -> polinomio
+	• + • : polinomio × polinomio -> polinomio
+	• × • : polinomio × polinomio -> polinomio
+Otras Operaciones:
+ esRaiz?: polinomio × nat -> bool
+Axiomas:
+	evaluar(cte(n), n') ≡ n
+	evaluar(x, n) ≡ n
+	evaluar((p1 + p2),n) ≡ evaluar(p1) + evaluar(p2)
+	evaluar((p1 × p2),n) ≡ evaluar(p1) × evaluar(p2)
+	
+	esRaiz?(p,n) ≡ evaluar(p,n) = 0
+Fin TAD
+
+// Ex 8
+TAD coordenada ES Tupla(entero × entero)
+
+TAD Robot
+Géneros:	robot
+Igualdad Observacional:	
+	(∀r1,r2:robot)(r1 =obs r2 ↔(trayectoria(r1) = trayectoria(r2)))
+Observadores Básicos:
+	trayectoria: robot -> secuencia(coordenada)
+Generadores:
+	ubicar: coordenada -> robot				{está?(coordenada, trayectoria(r))}
+	arriba: robot -> robot
+	abajo: robot -> robot
+	derecha: robot -> robot
+	izquierda: robot -> robot
+Otras Operaciones:
+	posicionActual: robot -> coordenada
+	cuantasVecesPaso: coordenada × robot -> nat		{está?(coordenada, trayectoria(r))}
+	masALaDerecha: robot -> coordeanda
+Axiomas:
+	trayectoria(ubicar(c)) ≡ <c>
+	trayectoria(arriba(r)) ≡ trayectoria(r) • <π1(fin(trayectoria(r))),π2(fin(trayectoria(r))) + 1>
+	trayectoria(abajo(r)) ≡ trayectoria(r) • <π1(fin(trayectoria(r))),π2(fin(trayectoria(r))) - 1>
+	trayectoria(izquierda(r)) ≡ trayectoria(r) • <π1(fin(trayectoria(r))) - 1,π2(fin(trayectoria(r)))>
+	trayectoria(derecha(r)) ≡ trayectoria(r) • <π1(fin(trayectoria(r))) + 1,π2(fin(trayectoria(r)))>
+	
+	posicionActual(r) ≡ ult(trayectoria(r))
+	
+	cuantasVecesPaso(c,r) ≡ if c = prim(trayectoria(r)) then 1 else cuantasVecesPaso(c, fin(trayectoria(r)))
+	
+	masALaDerecha(r,c) ≡ 
+	
+Fin TAD	
+
+// Ex 9 DISCLAIMER: es una mierda este ejercicio.
+	Se dispone de una cinta circular, dividida en una cantidad fija de celdas, sobre las cuales pueden o no existir
+elementos metalicos. Esta cinta se mueve en ambos sentidos.
+	Sobre la cinta se ecuentra montado un electroiman que atrae los elementos metalicos de la cinta cuando estos 
+quedan debajo de el. La disposicion inicial de los elementos sobre la cinta puede ser cualquiera.
+	El iman puede estar prendido o apagado, y solo atrae elementos cuando esta prendido y no esta cargando (ocupado)
+con algun elemento previamente atraido. Ademas, el iman solo puede apagarse si el objeto atraido (de haberlo) puede
+ser depositado debajo de la cinta.
+	Tanto el iman como cada celda de la cinta solo pueden contener un elemento a la vez, es decir que si el iman
+tiene atraido un elemento no puede atraer otro, y que si sobre una celda hay un elemento no puede soltarse sobre ella
+el elemento que tenga atraido el iman.
+	Por convencion, numeraremos las celdas de la cinta de 0 a n-1, siendo n la cantidad total de celdas. Ademas, suponemos
+que la celda inicial es la numero 0.
+	Se desea conocer cuantas veces se aplicaron las funciones "girar la cinta" a al izquierda y a la derecha (<- y -> 
+respectivamente), por separado, y si hay o no elementos metalicos sobre cada celda de la cinta.
+	Completar la especificacion a partir de la signatura dada.
+	
+TAD Cinta
+Generos cinta
+Observadores Básicos:
+	#celdas: cinta -> nat
+	celdaOcupada?: nat n × cinta c -> bool		{n<#celdas(c)}
+	#giros<-: cinta -> nat
+	#giros->: cinta -> nat
+Generadores:
+	arrancar: nat -> cinta 
+	ponerElem: cinta c -> cinta {¬celdaActualOcupada?(c)}
+	sacarElem: cinta c -> cinta {celdaActualOcupada?(c)}
+	<-: cinta -> cinta
+	->: cinta -> cinta
+Otras Operaciones:
+	celdaActualOcupada?: cinta -> bool 
+	#elem: cinta -> nat
+Axiomas:
+	#celdas(arrancar(n)) ≡ n
+	#celdas(ponerElem(c)) ≡ #celdas(c)
+	#celdas(sacarElem(c)) ≡ #celdas(c)
+	#celdas(<-(c)) ≡ #celdas(c)
+	#celdas(->(c)) ≡ #celdas(c)
+	
+	celdaOcupada?(n,arrancar(n')) ≡ false
+	celdaOcupada?(n,ponerElem(c)) ≡  
+	
+Fin TAD
+ 
+TAD Electroiman
+Géneros:	electroiman
+Observadores Básicos:
+	Cinta: electroiman -> cinta
+	imanPrendido?: electroiman -> bool
+	imanCargando?: electroiman e -> bool {imanPrendido?(e)}
+Generadores:
+	arrancar: cinta -> electroiman
+	prender: electroiman e -> electroiman {¬imanPrendido?(e)}
+	apagar: electroiman e -> electroiman {imanPrendido?(e) ∧L (imanCargando?(e) ⇒ ¬celdaActualOcupada?(e))}
+	<-: electroiman -> electroiman
+	->: electroiman -> electroiman
+Otras Operaciones:
+	celdaActualOcupada?: electroiman -> bool
+	#giros<-: electroiman -> nat
+	#giros->: electroiman -> nat
+Axiomas:
+	cinta(arrancar(c)) ≡ c
+	cinta(prender(e)) ≡ if celdaActualOcupada(e) then sacarElemento(cinta(e)) else cinta(e)
+	cinta(apagar(e)) ≡ if imanCargando?(e) then ponerElemento(cinta(e)) else 
+	
+Fin TAD
+
+// Ex 10
+Interesa especificar la apertura de ventanilla, llegada de un nuevo cliente a la fila,
+la atencion del cliente que estuviera en primer lugar (con su consecuente engreso de la fila),
+si la fila esta vacia, conocer la longitud (cantidad de clientes) de la fila, si un cliente determinado
+estaba esperando atencion en la fila o no (cuyo caso se desea saber su posicion en ella, siendo la posicion
+1 la del proximo cliente que seria atendido, es decir, el que haya llegado primero entre los clientes presentes)
+// A)
+TAD Fila
+Géneros:	fila
+Observadores Básicos:
+	posicion: persona p × fila f -> nat {esperando(p,f)}
+	esperando: persona × fila -> bool 
+Generadores:
+	abrirVentanilla: -> fila
+	llegar: persona p × fila f -> fila {¬esperando(p,f)}
+	atender: fila f -> fila  {¬vacia(f)}
+Otras Operaciones:
+	vacia: fila -> bool
+	longitud: fila -> nat
+
+Axiomas:
+	// posicion(p, abrirVentanilla) ≡ 1
+	posicion(p, llegar(p',f)) ≡ if p=p' then longitud(f) + 1 else posicion(p,f)
+	posicion(p, atender(f)) ≡ posicion(p,f) - 1
+	
+	esperando(p, abrirVentanilla) ≡ false
+	esperando(p,llegar(p',f)) ≡ p = p' V esperando(p,f)
+	esperando(p,atender(f)) ≡ if posicion(p) = 1 then false else true
+	
+	vacia(f) ≡ longitud(f)=0
+	
+	longitud(abrirVentanilla) ≡ 0
+	longitud(llegar(p,f)) ≡ longitud(f) + 1
+	longitud(atender(f)) ≡  longitud(f) - 1
+	
+Fin TAD
+// B) 
+TAD Fila
+Géneros:	fila
+Observadores Básicos:
+	posicion: persona p × fila f -> nat {esperando(p,f)}
+	esperando: persona × fila -> bool 
+	
+	seColo?: persona p × fila f -> bool {esperando(p,f)}
+Generadores:
+	abrirVentanilla: -> fila
+	llegar: persona p × fila f -> fila {¬esperando(p,f)}
+	atender: fila f -> fila  {¬vacia(f)}
+	
+	retirarse: persona p × fila f -> fila {esperando(p,f)}
+	colarseAdelanteDe: persona p1 × persona p2 × fila -> fila {¬esperando(p1,f) ∧ esperando(p2,f)}
+Otras Operaciones:
+	vacia: fila -> bool
+	longitud: fila -> nat
+
+Axiomas:
+	// posicion(p, abrirVentanilla) ≡ 1
+	posicion(p, llegar(p',f)) ≡ if p=p' then longitud(f) + 1 else posicion(p,f)
+	posicion(p, atender(f)) ≡ posicion(p) - 1
+	posicion(p,retirarse(p',f)) ≡ if p = p' then 0 else 
+																			if posicion (p,f)> posicion(p',f) then posicion(p,f) - 1
+																				else posicion(p,f)
+																				fi
+																		fi
+	posicion(p1,colarseAdelanteDe(p2,p3,f)) ≡ if p1 = p2 V posicion(p3,f) < posicion(p1,f) then posicion(p1,f) + 1 else 
+																							posicion(p1,f) fi
+	
+																									
+																													
+	
+	esperando(p, abrirVentanilla) ≡ false
+	esperando(p,llegar(p',f)) ≡ p = p' V esperando(p,f)
+	esperando(p,atender(f)) ≡ if posicion(p) = 1 then false else true fi
+	esperando(p,retirarse(p',f)) ≡ if p=p' then false else true fi
+	esperando(p1,colarseAdelanteDe(p2,p3,f)) ≡ p1=p2 V esperando(p1,f)
+	
+	vacia(f) ≡ longitud=0
+	
+	longitud(abrirVentanilla) ≡ 0
+	longitud(llegar(p,f)) ≡ longitud(f) + 1
+	longitud(atender(f)) ≡  longitud(f) - 1
+	
+	// seColo?(p, abrirVentanilla) ≡ 
+	seColo?(p, llegar(p',f)) ≡ seColo?(p,f)
+	seColo?(p, atender(p',f)) ≡ seColo?(p,f)
+	seColo?(p, retirarse(p',f)) ≡ seColo?(p,f)
+	seColo?(p1, colarseAdelanteDe(p2,p3,f)) ≡ seColo?(p1,f)
+	
+Fin TAD
+
+// C) 
+TAD Fila
+Géneros:	fila
+Observadores Básicos:
+	posicion: persona p × fila f -> nat {esperando(p,f)}
+	esperando: persona × fila -> bool 
+	seColo?: persona p × fila f -> bool {esperando(p,f)}
+	entro?: persona × fila -> bool
+	fueAtendido?: persona × fila -> bool
+Generadores:
+	abrirVentanilla: -> fila
+	llegar: persona p × fila f -> fila {¬esperando(p,f)}
+	atender: fila f -> fila  {¬vacia(f)}
+	
+	retirarse: persona p × fila f -> fila {esperando(p,f)}
+	colarseAdelanteDe: persona p1 × persona p2 × fila -> fila {¬esperando(p1,f) ∧ esperando(p2,f)}
+Otras Operaciones:
+	vacia: fila -> bool
+	longitud: fila -> nat
+
+Axiomas:
+	// posicion(p, abrirVentanilla) ≡ 1
+	posicion(p, llegar(p',f)) ≡ if p=p' then longitud(f) + 1 else posicion(p,f)
+	posicion(p, atender(f)) ≡ posicion(p) - 1
+	posicion(p,retirarse(p',f)) ≡ if p = p' then 0 else 
+																			if posicion (p,f)> posicion(p',f) then posicion(p,f) - 1
+																				else posicion(p,f)
+																				fi
+																		fi
+	posicion(p1,colarseAdelanteDe(p2,p3,f)) ≡ if p1 = p3 V posicion(p3,f) < posicion(p1,f) then posicion(p1,f) + 1 else 
+																							posicion(p1,f) fi
+	
+																									
+																													
+	
+	esperando(p, abrirVentanilla) ≡ false
+	esperando(p,llegar(p',f)) ≡ true
+	esperando(p,atender(f)) ≡ if posicion(p) = 1 then false else true fi
+	esperando(p,retirarse(p',f)) ≡ if p=p' then false else true fi
+	esperando(p1,colarseAdelanteDe(p2,p3,f)) ≡ esperando(p1,f)
+	
+	vacia(f) ≡ longitud=0
+	
+	longitud(abrirVentanilla) ≡ 0
+	longitud(llegar(p,f)) ≡ longitud(f) + 1
+	longitud(atender(f)) ≡  longitud(f) - 1
+	
+	// seColo?(p, abrirVentanilla) ≡ 
+	seColo?(p, llegar(p',f)) ≡ seColo?(p,f)
+	seColo?(p, atender(p',f)) ≡ seColo?(p,f)
+	seColo?(p, retirarse(p',f)) ≡ seColo?(p,f)
+	seColo?(p1, colarseAdelanteDe(p2,p3,f)) ≡ seColo?(p1,f)
+	
+Fin TAD
+
+// Ex 11
+TAD Producto es String
+
+TAD Stock
+Géneros: stock
+
+Igualdad Observacional:	
+(∀ s1:stock)((∀ s2:stock)(s1 =obs s2 ⇔ 
+	((∀ p:producto)(estaRegistrado(p,s1) ⇔ estaRegistrado(p,s2)) ∧L 
+	(∀ p1:producto)((∀ p2:producto)((estaRegistrado(p1,s1) ∧ 
+	estaRegistrado(p2,s1)) ⇒L (mínimo(p1,s1) = mínimo(p1,s2) ∧ 
+	compras(p1,s1) = compras(p1,s2) ∧ ventas(p1,s1) = ventas(p1,s2) ∧ esSus(p1,p2,s1) = esSus(p1,p2,s2)))))))
+
+Observadores básicos
+estaRegistrado: producto x stock → bool
+esSus: producto a x producto b x stock s → bool {estaRegistrado(a,s) ∧ estaRegistrado(b,s)}
+compras: producto p x stock s → nat {estaRegistrado(p,s)}
+ventas: producto p x stock s → nat {estaRegistrado(p,s)}
+mínimo: producto p x stock s → nat {estaRegistrado(p,s)}
+
+Generadores
+crearStock: . → stock
+registrarProducto: producto p x nat x stock s → stock {¬ estaRegistrado(p,s)}
+comprar: nat x producto p x stock s → stock {estaRegistrado(p,s)}
+vender: nat n x producto p x stock s → stock {estaRegistrado(p,s) ∧L compras(p,s) ≥ n}
+infSus: producto a x producto b x stock s → stock {(estaRegistrado(a,s) ∧ estaRegistrado(b,s)) ∧L ¬(∃ p:producto)(esSus(p,b,s)) ∧ a ≠ b}
+
+Otras Operaciones:
+stocksBajos: stock → conj(producto)
+tieneSus: producto p x stock s → bool {estaRegistrado(p,s)}
+obtenerSus: producto p x stock s → producto {estaRegistrado(p,s) ∧L tieneSus(p,s)}
+productos: stock → conj(producto)
+quitarBuenos: conj(producto) x stock → conj(producto)
+
+Axiomas
+estaRegistrado(p,crearStock) ≡ false
+estaRegistrado(p,registrarProducto(a,n,s)) ≡ p = a ∨ estaRegistrado(p,s)
+estaRegistrado(p,comprar(n,a,s)) ≡ estaRegistrado(p,s)
+estaRegistrado(p,vender(n,a,s)) ≡ estaRegistrado(p,s)
+estaRegistrado(p,infSus(a,b,s)) ≡ estaRegistrado(p,s)
+
+compras(p,comprar(n,a,s)) ≡ if p = a then n + compras(p,s) else compras(p,s) fi
+compras(p,registrarProducto(a,n,s)) ≡ if p = a then 0 else compras(p,s) fi
+compras(p,vender(n,a,s)) ≡ compras(p,s)
+compras(p,infSus(a,b,s)) ≡ compras(p,s)
+
+ventas(p,vender(n,a,s)) ≡ if p = a then n + ventas(p,s) else ventas(p,s) fi
+ventas(p,registrarProducto(a,n,s)) ≡ if p = a then 0 else ventas(p,s) fi
+ventas(p,comprar(n,a,s)) ≡ ventas(p,s)
+ventas(p,infSus(n,a,s)) ≡ ventas(p,s)
+
+esSus(a,b,registrarProducto(c,n,s)) ≡ if a = c ∨ b = c then false else esSus(a,b,s) fi
+esSus(a,b,infSus(c,d,s)) ≡ (a = c ∧ b = d) ∨ esSus(a,b,s)
+esSus(a,b,comprar(n,c,s)) ≡ esSus(a,b,s)
+esSus(a,b,vender(n,c,s)) ≡ esSus(a,b,s)
+
+mínimo(p,registrarProducto(a,n,s)) ≡ if p = a then n else mínimo(p,s) fi
+mínimo(p,comprar(n,a,s)) ≡ mínimo(p,s)
+mínimo(p,vender(n,a,s)) ≡ mínimo(p,s)
+mínimo(p,infSus(a,b,s)) ≡ mínimo(p,s)
+
+stocksBajos(s) ≡ quitarBuenos(productos(s),s)
+
+productos(crearStock) ≡ ∅
+productos(comprar(n,a,s)) ≡ productos(s)
+productos(vender(n,a,s)) ≡ productos(s)
+productos(registrarProducto(a,n,s)) ≡ Ag(a,productos(s))
+productos(infSus(a,b,s)) ≡ productos(s)
+
+tieneSus(p,registrarProducto(a,n,s)) ≡ (¬ p = a) ∧L tieneSus(p,s)
+tieneSus(p,comprar(n,a,s)) ≡ tieneSus(p,s)
+tieneSus(p,vender(n,a,s)) ≡ tieneSus(p,s)
+tieneSus(p,infSus(a,b,s)) ≡ p = b ∨ tieneSus(p,s)
+
+obtenerSus(p,infSus(a,b,s)) ≡ if p = b then a else obtenerSus(p,s) fi
+obtenerSus(p,registrarPruducto(a,n,s)) ≡ obtenerSus(p,s)
+obtenerSus(p,comprar(n,a,s)) ≡ obtenerSus(p,s)
+obtenerSus(p,vender(n,a,s)) ≡ obtenerSus(p,s)
+
+quitarBuenos(∅,s) ≡ ∅
+quitarBuenos(Ag(p,c),s) ≡ if tieneSus(p,s) then 
+														if mínimo(p,s) > compras(p,s) + compras(obtenerSus(p,s),s) - ventas(p,s) - ventas(obtenerSus(p,s),s) then
+														 				Ag(p,quitarBuenos(c,s)) 
+																		else quitarBuenos(c,s) 
+																	fi 	
+														else 
+															if mínimo(p,s) > compras(p,s) - ventas(p,s) then
+															 	Ag(p,quitarBuenos(c,s)) 
+																else 
+																	quitarBuenos(c,s) 
+																fi 
+													fi
+Fin TAD	
+	
+	
+// Ex 12 Juego de la Oca
+// Empiezan en la baldosa 0, se juega alternadamente, se avanza dependiendo que diga el dado y luego, la accion de la baldosa
+// Tablero: indica que js empiezan en la baldosa 0, el numero de baldosa de la llegada, accion de baldosa (#avanzar, #retroceder,nada)
+// accion solo se activa mediante dado, no por accion baldosa
+// Gana el que llega a la baldosa final
+// Se desea saber que indico el dado en cada jugada para un jugador, y saber si un jugador paso por una baldosa determinada
+
+TAD baldosa ES nat
+TAD jugador ES string
+TAD accion ES string
+
+TAD Tablero
+Géneros:	tablero
+Observadores Básicos:
+	baldosas: tablero -> secu(baldosa)
+	accion: tablero × baldosa -> int
+	 
+
+Generadores:
+	nuevoTablero: conj(baldosa)-> tablero
+Axiomas:
+	baldosas(nuevoTablero(c)) ≡ c
+	accion(nuevoTablero(c)) ≡ 
+	
+Fin TAD
+	
+	
+	
+//TAD Oca
+//Géneros:	oca
+
+// Ex 17 PDZ (HECHO EN CLASE) -> VIDEO YOUTUBE: https://www.youtube.com/watch?v=u6eg4vW3Le8
+
+TAD Precio ES Nat
+TAD Limite ES Nat
+TAD Cabina ES Nat
+
+TAD PDZ
+Géneros:	peaje
+Igualdad Observacional:
+
+Observadores Básicos:
+	precios: peaje -> dicc(vehiculo, precio)
+	cabinas: peaje -> dicc(cabina, limite)
+	colaDeCabina: cabina c × peaje p -> cola(vehiculo) {def?(c,cabinas(p))}
+	facturado: cabina c × peaje p -> nat {def?(c,cabinas(p))}
+	#vehiculosPorCabina: cabina c × vehiculo v × peaje p -> nat {def?(c,cabinas(p)) ∧ def?(v,precios(p))}//hace falta que este definido vehiculo? Rta:NO?
+	
+Generadores:
+	abrirPeaje: dicc(vehiculo,precio) × dicc(cabina,limite) dc -> peaje {¬(Ø?(claves(dc)))} //pedimos que haya al menos una cabina
+	llegaVehiculo: vehiculo v × cabina c × peaje p -> peaje {def?(c,cabinas(p)) ∧ def?(v,precios(p))}
+	facturarVehiculo: cabina c × peaje p -> peaje {def?(c,cabinas(p)) ∧L ¬(vacia?(colaDeCabina(c,p)))} 
+	
+	
+Otras Operaciones:
+	desencolarMitad: nat m × nat n × cola(vehiculo) c -> cola(vehiculo) {tamaño(c)=ALGO} // Para pensar
+	desencolarConVehiculo: vehiculo v × nat m × nat n × cola(vehiculo) c -> nat {tamaño(c)=ALGO}
+	masUsadasPorVehiculo: vehiculo × peaje p -> conj(cabina)
+	masUsadasPorVehiculoAux: vehiculo × conj(cabinas) cc × peaje p -> conj(cabina)
+	
+Axiomas:	∀p: peaje, ∀c,c': cabina, ∀v: vehiculo, ∀pr: dicc(vehiculo,precio), ∀lim: dicc(cabina,limite)
+	precios(abrirPeaje(pr,lim)) ≡ pr
+	precios(llegaVehiculo(v,c,p)) ≡ precios(p)
+	precios(facturadoVehiculo(c,p)) ≡ precios(p)
+	
+	cabinas(abrirPeaje(pr,lim)) ≡ lim
+	cabinas(llegaVehiculo(v,c,p)) ≡ cabinas(p)
+	cabinas(facturadoVehiculo(c,p)) ≡ cabinas(p) 
+	
+	colaDeCabina(c,abrirPeaje(pr,lim)) ≡ vacia
+	colaDeCabina(c,llegaVehiculo(v,c',p)) ≡ if c=c' then 
+																							if tamaño(colaDeCabina(c,p)) = obtener(c,cabinas(p)) - 1 then
+																								desencolarMitad(0,tamaño(colaDeCabina(c,p)) + 1, encolar(v,colaDeCabina(c,p)))
+																							else encolar(v,colaDeCabina(c,p))
+																							fi
+																					else if tamaño(colaDeCabina(c,p)) = obtener(c,cabinas(p)) - 1 then
+																					 			desencolarMitad(0,tamaño(colaDeCabina(c,p)) + 1, encolar(v,colaDeCabina(c,p)))
+																								else colaDeCabina(c,p)
+																								fi
+																					fi
+	desencolarMitad(m,n,q) ≡ if m >= n then q else desencolarMitad(m+1,n-1,desencolar(q)) fi
+	colaDeCabina(c,facturarVehiculo(c',p)) ≡ if c=c' then desencolar(c,p) else colaDeCabina(c,p) fi
+	
+	facturado(c,abrirPeaje(pr,lim)) ≡ 0
+	facturado(c,llegaVehiculo(v,c',p)) ≡ facturado(c,p)
+	facturado(c,facturarVehiculo(v,c',p)) ≡ if c=c' then obtener(proximo(colaDeCabina(c)),precios(p)) + facturado(c,p) else facturado(c,p) fi
+	
+	#vehiculosPorCabina(c,v,abrirPeaje(pr,lim)) ≡ 0
+	#vehiculosPorCabina(c,v,llegaVehiculo(c',p)) ≡ if tamaño(colaDeCabina(c,p)) = obtener(c,cabinas(p)) - 1 then 
+																										if c=c' then
+																											desencolarConVehiculo(v,0,tamaño(colaDeCabina(c,p)+1),encolar(v',colaDeCabina(c,p)))
+																											else desencolarConVehiculo(v,0,tamaño(colaDeCabina(c,p)+1),colaDeCabina(c,p))
+																											fi + #vehiculosPorCabina(c,v,p)
+																								 fi
+ #vehiculosPorCabina(c,v,facturarVehiculo(c',p)) ≡ β(c=c') * β(v=tope(colaDeCabina(c',p))) + #vehiculosPorCabina(c,v,p)
+ desencolarConVehiculo(v,m,v,q) ≡ if m>=n then 0 else β(proximo(q)=v) + desencolarConVehiculo(v,m+1,m-1,desencolar(q))
+
+	
+	
+Fin TAD
+
+	
+	
+// Práctica 1 - Ejercicio 13
+
+TAD Colectivo
+    igualdad observacional
+        (∀c, c': colectivo)()
+    géneros colectivo
+    exporta
+    usa Secuencia, Nat
+    observadores básicos
+        paradaActual: colectivo → parada
+        cantidadParadas: colectivo → nat
+        cantidadAsientos: colectivo → nat
+        cantidadPasajeros: colectivo → nat
+    generadores
+        comenzarRecorrido: nat ps × nat → colectivo {ps > 0}
+        manejar: colectivo → colectivo
+        subeUnPasajero: colectivo × destino → colectivo
+    otras operaciones
+        asientosLibres: colectivo → nat
+    axiomas ∀c: colectivo, ∀p: parada, ∀ps: nat, ∀a: nat, ∀pj: pasajero
+        paradaActual(comenzarRecorrido(ps, a)) ≡ 0
+        cantidadParadas(comenzarRecorrido(ps, a)) ≡ ps
+        cantidadAsientos(comenzarRecorrido(ps, a)) ≡ a
+        cantidadPasajeros(comenzarRecorrido(ps, a)) ≡ 0
+
+        paradaActual(manejar(c)) ≡ if paradaActual(c) < cantidadParadas(c) then paradaActual(c) + 1 else 0 fi
+        cantidadParadas(manejar(c)) ≡ cantidadParadas(c)
+        cantidadAsientos(manejar(c)) ≡ cantidadAsientos(c)
+        cantidadPasajeros(manejar(c)) ≡ cantidadPasajeros(c) - cantidadPasajerosQueSeBajan(manejar(c))
+
+        paradaActual(subeUnPasajero(c, pj)) ≡ paradaActual(c)
+        cantidadParadas(subeUnPasajero(c, pj)) ≡ cantidadParadas(c)
+        cantidadAsientos(subeUnPasajero(c, pj)) ≡ cantidadAsientos(c)
+        cantidadPasajeros(subeUnPasajero(c, pj)) ≡ cantidadPasajeros(c) + 1
+Fin TAD
+
+TAD Parada es Nat
+    géneros parada
+
+TAD Pasajero
+    géneros pasajero
+    observadores básicos
+        destino: pasajero → parada
+    generadores
+        comenzarViaje: destino → pasajero
+    axiomas ∀p: parada
+        destino(comenzarViaje(p)) ≡ p
+Fin TAD
+
+// EX 20 TECNICOS A DOMICILIO
+
+// grupo de tecnicos atienden demanda de sus clientes
+// al solcitar tecnico se verifica si hay disponibles en empresa, si no queda pendiente de asignacion
+// tecnico al terminar avisa por radio y si exiten pendientes de asignacion la central le asigna al tecnico el mas cercano al domicilio
+// en el que este se encuentra y el tecnico se dirige automaticamente alli (si hay mas de un pendiente a la misma distancia
+// se asignara el pedido entre estos que lleve mas tiempo esperando). Si no se regresa a la empresa
+// Se desea saber dada una direccion, quienes fueron los tecnicos que la visitaron la mayor cantidad de veces (aun si todavia
+// no resolvieron el inconveniente tecnico)
+
+// Se puede asumir este TAD como dado:
+TAD Direccion
+Géneros:	direccion
+Otras Operaciones:
+	dist: direccion × direccion -> nat
+	
+
+TAD Tecnico ES String
+
+TAD Tecnicos a domicilio
+Géneros:	tad
+Observadores Básicos:
+	ocupados: tad -> conj(tecnico)
+	disponibles: tad -> conj(tecnico)
+	pendientes: tad -> secu(direccion)
+	ubicacion: tad t × tecnico p -> direccion 				{p ∈ ocupados(t)}
+	#visitas: tad t × tecnico p × direccion d -> nat {p ∈ disponibles(t) U ocupados(t)}
+
+Generadores:
+	crear: conj(tecnico) c -> tad 			{¬∅?(c)}
+	solicitar: tad × direccion -> tad
+	finalizar: tad r × tecnico t -> tad {t ∈ ocupados(r)} 
+
+Otras Operaciones:
+	TecMasVisitaron : tad t × direccion d -> conj(tecnico)
+	masCercano: secu(direccion) s × direccion d -> direccion  {esta?(d,s)}
+	sacar: direccion d × secu(direccion) s  -> secu(direccion) {esta?(d,s)} 
+
+Axiomas:
+	ocupados(crear(c)) ≡ Ø
+	ocupados(solicitar(t,d)) ≡ ocupados(t) U if vacía?(disponibles(t)) then Ø else dameUno(disponibles(t)) fi
+	ocupados(finalizar(t,tec)) ≡ if vacía?(pendientes(t)) then ocupados(t) - [tec] else Ø fi 
+	
+	disponibles(crear(c)) ≡ c
+	disponibles(solicitar(t,d)) ≡ if Ø?(disponibles(t)) then Ø else sinUno(disponibles(t)) fi
+	disponibles(finalizar(t,tec)) ≡ if vacía?(pendientes(t)) then Ag(tec,disponibles(t)) else ocupados(t) - [tec] fi
+	
+	pendientes(crear(c)) ≡ <>
+	pendientes(solicitar(t,d)) ≡ if Ø?(disponibles(t)) then pendientes(t) ◦ d else <> fi
+	pendientes(finalizar(t,tec)) ≡ if vacía?(pendientes(t)) then <> 
+																			else sacar(masCercano(pendientes(t),ubicacion(t,p)), pendientes(t))
+																			fi
+	sacar(d,s) ≡ if prim(s) = d then fin(s) else prim(s) • sacar(d,fin(s))
+	masCercano(s) ≡ if long(s)=1 then prim(s)
+											else if dist(prim(s),d) < dist(d,masCercano(fin(s),d)) 
+															then prim(s) 
+															else masCercano(fin(s),d)
+															fi
+													fi
+	ubicacion(solicitar(t,d),tec) ≡ if tec ∈ ocupados(t) then ubicacion(tec) else d fi
+	ubicacion(finalizar(t,tec), tec') ≡ if tec=tec' ∧ ¬(Ø?(pendientes(t))) then  masCercano(pendientes(t),ubicacion(t,p)) else ubicacion(tec') fi
+	
+	#visitas(crear(c),tec,d) ≡ 0
+	#visitas(solicitar(t,d),tec,d') ≡ if d=d' ∧L ¬Ø?(disponibles(t)) ∧L tec = dameUno(disponibles(t))
+																					then #visitas(t,tec,d') + 1 else #visitas(t,tec,d') fi
+	#visitas(finalizar(t,tec),tec',d)) ≡ if d=d' ∧L ¬Ø?(disponibles(t)) ∧L tec = masCercano(pendientes(t),ubicacion(t,p)) then
+																				#visitas(t,tec',d) + 1 else #visitas(t,tec',d) fi
+	
+	TecMasVisitaron(t,d) ≡ masVisitaronOcupados(t,d) U masVisitaronDisponibles(t,d) // falta axiomatizar estos auxiliares y definirlos.
+																						 
+	 
+	
+Fin TAD
+
+
+// PARCIALES VIEJOS
+
+// 6 de julio de 2019
+// Se puede usar esta funcion:
+porc(N,M) que calcula M % de N
+
+TAD Reino ES String
+TAD Poderio ES nat
+
+TAD Guesteros
+Géneros:	juego
+Observadores Básicos:
+	reinos: juego -> dicc(reino,poderio)
+	aliados: juego j × reino r -> conj(reino) {r ∈ claves(reinos(j))}
+	espiados: juego j × reino r -> conj(reino) {r ∈ claves(reinos(j))}
+	
+Generadores:
+	nuevoJuego: dicc(reino,poderio) -> juego
+	atacar: juego j × reino r × reino r' -> juego {r ∈ claves(reinos(j)) ∧ r' ∈ claves(reinos(j)) ∧ ¬(r'∈ aliados(j,r))}
+	aliar: juego j × reino r × reino r' -> juego	{r ∈ claves(reinos(j)) ∧ r' ∈ claves(reinos(j)) ∧ ¬(r ∈ aliados(j,r')) ∧ ¬(r' ∈ aliados(j,r))}
+	espiar: juego j × reino r × reino r' -> jeugo {r ∈ claves(reinos(j)) ∧ r' ∈ claves(reinos(j))}
+	
+Otras Operaciones:
+	losers: juego -> conj(reino)
+	#bajasBatallaMasSangrienta: juego -> nat
+	
+Axiomas:
+	
+Fin TAD
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				

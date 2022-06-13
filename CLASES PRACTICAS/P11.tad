@@ -1,0 +1,181 @@
+// Ultima clase practica de la materia, by Cristian Cossio
+// Sorting + D&C, NO HAY VIDEOS PARA LA PARTE DE D&C, SOLO DIAPOS
+												****** SORTING ******
+// Ejercicio 1, Sorting de parcial viejo (Rankings)
+Se tiene un arreglo R con n strings sin repeticiones que define un ranking.
+Contamos, ademas, con un arreglo A de m strings tal que todos ellos
+aparecen en el ranking R
+Se quiere ordenar el arreglo A en funcion del ranking definido por R.
+Por ejemplo, si tenemos:
+	R = [Brasil, Argentina, Alemania, Chile, Colombia, Francia]
+	A = [Chile, Francia, Brasil, Chile, Argentina, Brasil]
+entonces el orden correcto para A seria:
+	[Brasil, Brasil, Argentina, Chile, Chile, Francia]
+Suponiendo que el largo de todos los strings esta acotado por una
+constante, proponer un algoritmo de ordenamiento que resuelva el
+problema en una complejidad O(n + m), donde n y m son las cantidades
+de elementos en el ranking y en el arreglo a ordenar, respectivamente.
+---
+
+ordenar(in R:arreglo(string), in A:arreglo(string)) → res:arreglo(string)
+	apariciones ← crearDiccTrie() 	// Θ(1)
+	for P en R do 									// Θ(n)
+		Definir(apariciones, P, 0) 		// Θ(1)
+	end for
+	for P en A do                					    // Θ(m)
+		cant ← Significado(apariciones, P) 			// Θ(1)
+		Definir(apariciones, P, cant + 1) 			// Θ(1)
+	end for
+	res ← crearArreglo(n) 	// Θ(m)
+	pos ← 0 								// Θ(1)
+	for P en R do 																		// Θ(max{n, m})
+	 for i de 0 hasta Significado(apariciones,P) do 	// Θ(#apariciones(P, A))
+	 		res[pos] ← P 		// Θ(1)
+	 		pos ← pos + 1 	// Θ(1)
+	 end for
+	end for
+// Complejidad: O(1) + O(n).O(1) + O(m).O(1) +  O(m) +	O(max{n, m}) = O(n) + O(m) + O(max{n, m}) = O(n+m)
+	
+// Ejercicio 2, Secuencias de intervalos
+Se tiene un arreglo de secuencias no vacias de numeros naturales, cada
+una de los cuales contiene a todos los numeros dentro de un intervalo
+determinado.
+Se quiere generar un arreglo de naturales que contenga a todos los
+elementos de todas las secuencias, sin repetidos, ordenados de menor a
+mayor.
+	- entrada: [[8,5,7,6],[11,10,12],[4,3,5,6]]
+	- salida : [3,4,5,6,7,8,10,11,12]
+Proponer un algoritmo que resuelva el problema en O(n + (k.log k)),
+donde k es la cantidad de secuencias y n la cantidad total de elementos
+(es decir, la suma de las longitudes de todas las secuencias).
+---
+
+ordenarSecuencias (in intervalos:arreglo((arreglo(nat))) ) → res:arreglo dimensionable(nat)
+	 arrCotas ← crearArreglo(tam(intervalos)) 		// Θ(k)
+	 pos ← 0 																			// Θ(1)
+	 for inter en intervalos do 									// Θ(n)
+	 		arrCotas[pos] ← buscarMinMax(inter) 			// Θ(tam(inter))
+	 end for
+	 mergesort(arrCotas) 													// Θ(k.log k)
+	 res ← Vacia() 												// Θ(1)
+	 ultimo ← 0 																	// Θ(1)
+	 for i desde 0 hasta tam(arrCotas) − 1 do 		// Θ(n)
+	 		cota ← arrCotas[i] 												// Θ(1)
+	 		for j desde π₁(cota) hasta π₂(cota) do 		// Θ(|inter_i|)
+	 			if j > ultimo then 											// Θ(1)
+	 			AgAtras(res, j) 											// Θ(1)
+	 			ultimo ← j                              // Θ(1)   
+				end if
+			end for
+	 end for 															
+	 listaAArreglo(result, res) 									// Θ(n)
+
+buscarMinMax (in arr :arreglo(nat) ) → res:〈nat, nat〉
+  min ← arr [0] 																// Θ(1)
+  max ← arr [0] 																// Θ(1)
+  i ← 1 																				// Θ(1)
+	
+  while i < tam(arr) do 												// Θ(l)
+  	if arr [i] < min then 											// Θ(1)
+  		 min ← arr [i] 														// Θ(1)
+  	else
+  		if arr [i] > max then 										// Θ(1)
+  		 max ← arr [i] 														// Θ(1)
+			end if
+		end if
+ res ← 〈min, max〉 														// Θ(1)
+
+--- 
+														****** Divide and Conquer ******
+// Ejercicio 1 (Interseccion mas grande)
+Dado un arreglo de n ≥ 2 intervalos cerrados de numeros naturales
+L₁, . . . , L_n, cada uno representado como un par < L_inf , L_sup >, ordenado
+usando L_inf como clave, se desea encontrar dos de ellos que maximicen su
+interseccion, es decir, un par de indices i y j con 1 ≤ i < j ≤ n tal que la
+cantidad de valores dentro de la interseccion de los intervalos Li ∩ Lj sea
+maxima entre todos los intervalos de entrada.
+
+Dar un algoritmo que use la tecnica de D&C y resuelva el
+problema en tiempo O(n log n) en el peor caso.
+- Marcar claramente que partes del algoritmo se corresponden a dividir,
+conquistar y unir subproblemas.
+- Justificar detalladamente que el algoritmo cumple con la complejidad
+pedida.
+
+maxIntervalo (in a:arreglo(〈nat, nat〉)) → res:〈nat, nat〉
+	res ← maxIntAux(a, 0, longitud(a)) // O(n)
+	
+maxIntAux (in a:arreglo(〈nat, nat〉), in i :nat, in d :nat) → res:〈nat, nat〉
+	// CONQUISTAR
+	if d − i = 1 then 												 // Θ(1)
+		res ← 〈i, d〉 											      // Θ(1)
+	else if d − i = 2 then 										 // Θ(1)
+			 res ← 〈i, i + 1〉 										// Θ(1)
+			 res ← maxPar(a, res, 〈i + 1, i + 2〉) // Θ(1)
+			 res ← maxPar(a, res, 〈i, i + 2〉) 	  // Θ(1)
+			else
+	// DIVIDIR
+			izq ← maxIntAux(a, i, (i+d)/2 )		  		// T (n/2)
+			der ← maxIntAux(a, (i+d)/2 + 1, d) 			// T (n/2)
+	// COMBINAR
+			res ← maxPar(a, izq, der )				 			// Θ(1)
+			masLargo ← maxExtenso(a, i, d/2)  			// Θ(n)
+			for j desde (i+d)/2 + 1 hasta d do  		// Θ(n)
+				res ← maxPar(a, res, (masLargo, j)) 	// Θ(1)
+			end for
+			end if
+	end if
+
+maxPar (in a:arreglo(〈nat, nat〉), in p1:〈nat, nat〉, in p2:〈nat, nat〉) → res:〈nat, nat〉
+	 if interseccion(a[π₁(p1)], a[π₂(p₁)]) > interseccion(a[π₁(p₂)], a[π₂(p₂)]) then // Θ(1)
+	 res ← p1 	// Θ(1)
+	 else
+	 res ← p2	  // Θ(1)
+	 end if
+
+masExtenso (in a:arreglo(〈nat, nat〉, in d:nat, in h:nat) ) → res:nat
+	  res ← d
+	  for i desde d hasta h do 				// Θ(|a|)
+	  	if π₂(a[i]) > π₂(a[res]) then // Θ(1)
+	  		res ← i                     // Θ(1)
+
+interseccion (in a:〈nat, nat〉, in b:〈nat, nat〉) → res:nat
+	res ← π₂(a) − π₁(b) 		// Θ(1)
+
+// Ejercicio 2 (Arbol bicolor)
+Escribir un algoritmo EsRojinegroValido?, basado en D&C, que dado un arbol
+binario bicolor determine si es rojinegro valido.
+En nuestra version simplificada de red-black trees, un arbol binario bicolor
+es rojinegro valido si y solo si satisface las siguientes 3 propiedades:
+ - Todas las hojas son negras
+ - Los hijos de un nodo rojo, de haberlos, siempre son negros
+ - Todos los caminos (desde la raiz hasta una hoja) contienen la misma
+	 cantidad de nodos negros
+Cosas a tener en cuenta:
+ - No visitar el mismo nodo multiples veces.
+ - Suponer que puede determinar en O(1) si un nodo es rojo o negro.
+ - Marcar claramente en el algoritmo las distintas etapas de la tecnica, y
+	 calcular la complejidad temporal de su algoritmo en peor caso.
+---
+esRojinegroValidoAux (in a : ab(color)) −→ res:〈bool, nat〉
+	// CONQUISTAR
+	if esHoja(a) then 					 	 // Θ(1)
+		res ← 〈esNegro(a), 1〉 		  // Θ(1)
+	else
+	// DIVIDIR
+		auxIzq ← esRojinegroValidoAux(izq(a)) // T (tamaño(izq(a)))
+		auxDer ← esRojinegroValidoAux(der(a)) // T (tamaño(der(a)))
+	// COMBINAR
+		hijosNegros ← True 												// Θ(1)
+		if esRojo(a) then 												// Θ(1)
+			hijosNegros ← tieneHijosNegros(a) 			// Θ(1)
+		camIguales ← π₂(auxIzq) = π₂(auxDer ) 		// Θ(1)
+		res ← 〈hijosNegros ∧ camIguales ∧ π₁(auxIzq) ∧ π₁(auxDer ), π₂(auxIzq) + β(esNegro(a))〉	// Θ(1)
+		
+		
+		
+		
+		
+		
+		
+		

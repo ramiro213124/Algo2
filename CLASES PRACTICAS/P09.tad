@@ -1,0 +1,131 @@
+// Primera clase de Sorting
+// Ejercicio 12 de la guia 5
+// Pre: sea n  = lenth(a) ⇒L tam(menoresA20(A)) + tam(mayoreseA40(A)) < √n
+
+ordenarDatos(inout A: arreglo(nat))														// O(4*n + √n)=O(n)
+	lista(nat) menoresA20 <- Vacia()														// O(1)
+	lista(nat) mayoresA20 <- Vacia()														// O(1)
+	lista(nat) entre20y40 <- Vacia()														// O(1)
+	for i <- 0 to tam(A) do																			// O(n)
+		if A[i] < 20 then AgregarAtras(menoresA20, A[i]) else			// O(1)
+			if A[i] > 40 then AgregarAtras (mayoresA40, A[i]) else	// O(1)
+				AgregarAtras(entre20y40, A[i])												// O(1)
+			end if
+		end if
+	end for
+	arreglo(nat) aMenoresA20 <- deListaAArreglo(menoresA20)			// O(|aMenoresA20|)
+	arreglo(nat) aMayoresA40 <- deListaAArreglo(mayoresA20)			// O(|aMayoresA20|) = O(√n) entre las dos 
+	arreglo(nat) aEntre20y40 <- deListaAArreglo(entre20y40)			// O(|aEntre20y40|) = O(n)
+	CoutingSort(aEntre20y40)																		// O(|aEntre20y40|) = O(n)
+	SelectionSort(aMenoresA20)																	// O(|aMenoresA20|^2) 
+	SelectionSort(aMayoresA40)																	// O(|aMayoresA40^2|) = O(√n^2) = O(n) entre las dos
+	concatenar(A, aMenoresA20, aEntre20y40, aMayoresA40)				// O(n)
+	
+// Ejercicio 9 de la guia 5
+
+Considere la siguiente representacion para guardar las notas de un alumno de un curso
+Representación: 
+		alumno es tupla ⟨	nombre:	string,
+											genero: GEN,
+											puntaje: Nota ⟩
+Donde GEN es enum{masc,fem} y Nota es un nat no mayor que 10.
+
+Se necesita ordenar un arreglo(alumno) de forma tal que todas las mujeres aparezcan al inicio de la tabla segun un orden
+creciente de notas y todos lo varones aparezcan al final de la tabla tambien ordenados de una manera creciente respecto
+de su puntaje.
+1) Proponer un algoritmo de ordenamiento que ordenaPlanilla(inout p: arreglo(alumno)) para resolver el problema descripto
+anteriormente y cuya complejidad temporal sea O(n) en el peor caso, donde n es la cantidad de elementos del arreglo. Justificar.
+2) Modificar la solucion del inciso anterior para funcionar en el caso que GEN sea un tipo enumerado con mas elementos
+(donde la cantidad de los mismos sigue estando acotada y el orden final esta dado por el orden de los valores en el enum. Puedo hacer for g in GEN).
+3) ¿La cota O(n) contradice el "lower bound" sobre la complejidad temporal en el peor caso de los algoritmos de ordenamiento? (El teorema de 
+"lower bound" establece que todo algoritmo general de ordenamiento tiene complejidad temporal Ω(n.log n).) Explique su respuesta.
+---
+ordenaPlanilla(inout p: arreglo(alumno))
+
+1)
+ordenaPlanilla(inout A: arreglo(alumno))
+	arreglo(lista(alumno)) Mujeres <- crearArreglo(10)													// O(10) = O(1)
+	arreglo(lista(alumno)) Varones <- crearArreglo(10)													// O(10) = O(1)
+	for i <- 0 to 9 do																													// O(10) = O(1)
+		Mujeres[i] <-Vacia() 																											// O(1)
+		Varones[i] <- Vacia()																											// O(1)
+	end for
+	
+	for j <- 0 to tam(A) do
+		if A[j].sexo == "F" then AgregarAtras(Mujeres[A[j].nota - 1],A[j]) else		// O(n)
+		AgregarAtras(Varones[A[j] - 1], A[j])
+		end if
+	end for
+	lista(alumno) listaDeMujeres <- arregloDeListaALista(Mujeres)								// O(n)
+	lista(alumno) listaDeVarones <- arregloDeListaALista(Varones)								// O(n)
+	A <- concatenameListasYPasaAArray(listaDeMujeres, listaDeVarones)						// O(n)
+	
+// Auxs:	
+arregloDeListaALista(inout A: arreglo(lista(alumno)), out B: lista(alumno))		// O(n)
+	lista((alumno) B <- Vacia()
+	for i <- 0 to 9 do
+		for j <- 0 to Longitud(A[i])
+			AgregarAtras(B, A[j])
+		end for	
+	end for
+
+concatenameListasYPasaAArray(in A: lista(alumno), in B: lista(alumno), out C: arreglo(alumno))
+	arreglo(alumno) C <- crearArreglo(Longitud(A) + Longitud(B))										// O(n)
+	int aux = Longitud(A)																														// O(1)
+	for i <- 0 to Longitud(A) do																										// O(n) entre los 2 for
+		C[i] = A[0]
+		Fin(A)
+	end for
+	
+	for j <- 0 to Longitud(B) do
+		C[aux + j] = A[0]
+		Fin(A)
+	end for
+
+// Ejercico de Parcial Sorting https://www.cubawiki.com.ar/images/3/32/AED2_3Parcial_%3F%3F-%3F%3F-20_enunciado.pdf
+
+// IDEA: hay un arreglo de conjuntos longitud n, los conjuntos estan acotados por k. Entonces creo k + 1 buckets (el 1 es por el Ø)
+// y me fijo la cardinalidad de cada conjunto para derivarlo a su respectivo bucket (ya que para que un conjunto este antes de otro 
+// en el cual esta incluido, necesariamente tiene que estar antes), eso cuesta O(n) dado el modulo del enunciado. Luego concateno.
+// Finalmente, tengo O(nk).
+
+ordenarPorInclusion (in A: arreglo(conjunto(nat)), in k: nat, out B: arreglo(conjunto(nat)))
+	B <- crearArreglo(tam(A))
+	for i <- 0 to tam(A) do
+		B[i] <- 0
+	end for
+	
+	arreglo(lista(nat)) aux <- crearArreglo(k+1)
+	for i <- 0 to k+1 do
+		aux[i] <- Vacia()
+	end for
+	
+	for i <- 0 to tam(A) do 
+		B[cardinalidad(A[i])] = A[i]
+	end for
+	
+doble for para concatenar y pasar arreglo y listo
+
+// Ejercicio 13  de la guia 5
+// 1) IDEA: primero ordenar desde lo menos significativo a lo mas significativo dado que usaremos radixSort.
+// Usamos radixSort con mergeSort ya que es estable y me da la complejidad para ordenar el numero.
+// Luego, para ordenar los strings usamos nuevamente otro radixSort pero con bucketSort esta vez, donde hay tantos 
+// buckets como caracteres, luego la complejidad es la pedida.
+// 2) En vez de usar mergeSort utilizariamos bucketSort y habria tatnos buckets como la cota que dice que hay
+
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		

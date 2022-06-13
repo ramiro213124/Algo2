@@ -1,0 +1,84 @@
+representación:
+	palindromo se representa con estr, donde
+		estr es tupla⟨
+			long: nat,
+			palabra: secu(α)
+		⟩
+
+invariante de representación:
+	Rep: estr e → bool
+	(∀e: estr) Rep(e) ≡ long(e.palabra) =obs ⌈ e.long / 2 ⌉  // same as e.long =obs long(e.palabra)*2 ∨ e.long =obs long(e.palabra)*2-1
+		
+
+función de abstracción:
+	Abs: estr e → palindromo { Rep(e) }
+	(∀e: estr) Abs(e) =obs p | ver(p) =obs e.palabra ++ segundaMitad(e)
+
+	segundaMitad: estr → secu(α)
+	segundaMitad(e) ≡ if e.long % 2 =obs 1 then reverse(com(e.palabra)) else reverse(e.palabra) fi
+
+	reverse: secu(α) → secu(α)
+	reverse(l) ≡ if vacia?(l) then <> else ult(l) ∙ reverse(com(l)) fi
+
+Interfaz
+
+    parámetros formales:
+        
+        funciones:
+            medio(in a: α) → res: palindromo(α)
+            Pre ≡ { true }
+            Post ≡ { res =obs medio(a) }
+            Descripción: Genera un palindromo de long = 1 con solo el elemento a. 
+            Complejidad: Θ(copiar(a))
+            Aliasing: No presenta aspectos de aliasing
+
+            medioDoble(in a: α) → res: palindromo(α)
+            Pre ≡ { true }
+            Post ≡ { res =obs medioDoble(a) }
+            Descripción: Genera un palindromo de long = 2 con el elemento a como un medio doble. 
+            Complejidad: Θ(copiar(a))
+            Aliasing: No presenta aspectos de aliasing 
+
+            agregar(in a: α, in/out p: palindromo(α)) 
+            Pre ≡ { p = p₀ }
+            Post ≡ { res =obs agregar(a, p0) }
+            Descripción: Agrega un elemto adelante y atras al palindromo. 
+            Complejidad: Θ(copiar(a))
+            Aliasing: No presenta aspectos de aliasing
+
+            ver(in p: palindromo(α)) → res: secu(α)
+            Pre ≡ { true }
+            Post ≡ { res =obs ver(p) }
+            Descripción: Genera un palindromo de long = 1 con solo el elemento a. 
+            Complejidad: Θ(n*copiar(α)) donde n = long(p)
+            Aliasing: No presenta aspectos de aliasing
+
+
+
+    algoritmos:
+        iMedio(in a: α) → res: estr
+        	res ← ⟨ 1, <a> ⟩
+
+      	iMedioDoble(in a: α) → res: estr
+        	res ← ⟨ 2, <a> ⟩
+
+        iAgregar(in a: α, in/out e: estr)
+        	e.long ← e.long + 2
+        	e.palabra ← a ∙ e.palabra
+
+        iVer(in e: estr) → res: list(α)	
+        	res ← e.palabra 
+        	if e.long % 2 == 1 then 
+        		res ← res ++ iReverse(com(e.palabra)) 
+        	else 
+        		res ← res ++ iReverse(e.palabra) 
+        	fi
+
+        iReverse(in l: list(α))
+        	res ← <>
+        	while(!vacia?(l))
+        		res ← res ∘ prim(l)
+        		s ← fin(l)
+            
+
+Fin Interfaz

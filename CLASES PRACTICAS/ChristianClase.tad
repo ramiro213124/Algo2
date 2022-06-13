@@ -1,0 +1,50 @@
+PROBLEMA:
+Queremos armar el Registro Maestro ("el maestro" de clientes)
+
+Asi, dado un numero de DNI de un cliente, queremos conocer la direccion de mail de
+persona (operacion obtenerMail(dni)). Tambien, nos interesa saber cuantos
+clientes tenemos (cantClientes).
+
+¿Que estructura deberiamos definir para tener las siguientes operaciones con sus 
+respectivos costos?
+
+0) agregarCliente(dni,mail), borrarCliente(dni), modificar(dni,mail), esCliente?(dni)
+deben costar O(n).
+1) obtenerMail(dni) debe costar O(log n)
+2) cantClientes debe costar (1)
+3) ¿Como podriamos hacer para que obtenerMail cueste O(1)?
+4) Agregar una operacion Clientes, que devuelva todos los DNIs de los clientes actuales
+en O(1).
+5) Tener en cuenta que se pueden eliminar clientes que se dieron de baja de nuestra
+organizacion en O(log n).
+
+con 'n' la cantidad de clientes.
+----
+0)1)2)
+ESTRUCTURA
+
+Representación:
+	Maestro se representa con estr donde 
+		estr es tupla ⟨ clientes:	diccAVL(dni,mail)
+									  cantCLientes: nat ⟩
+
+---
+3) Podriamos usar un diccTrie(dni,mail) en lugar de diccAVL(dni,mail) en la estructura
+ya que el numero de digitos en el DNI está acotado por lo que obtenerMail
+costaria O(|k|) o sea, O(1) en este caso acotado.
+Representación:
+	Maestro se representa con estr donde 
+		estr es tupla ⟨ clientes:	diccTrie(dni,mail)
+									  cantCLientes: nat ⟩
+
+---
+
+4) Se agrega una componente dnis a la tupla que es un conjLineal(dni):
+Representación:
+	Maestro se representa con estr donde 
+		estr es tupla ⟨ clientes:	diccAVL(dni,mail),
+									  cantCLientes: nat,
+										dnis: conjLineal(dni)
+										 ⟩
+---
+5) TAREA, PISTA: usar iteradores.

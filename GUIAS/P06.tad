@@ -1,0 +1,47 @@
+// Recu parcial 3, D&C 2021 (solucion definitiva extraida de whatsapp)
+
+// Algoritmo O(n) para maximizar alfajores. 
+// A debe ser de tipo array, previamente inicializado en todas sus posiciones
+// De manera tal que A[i] es O(1) para todo i.
+
+
+def maxAlfajoresAux(A,i,j):
+   
+  if i+1==j:
+    mejor = A[i]
+    sinBordeIzq = 0
+    sinBordeDer = 0
+    sinBordes = 0
+
+  else:
+    // Divido
+    m = int((i+j)/2)
+    ladoIzq = maxAlfajoresAux(A, i, m)
+    ladoDer = maxAlfajoresAux(A, m, j)
+
+    // Conquisto
+
+    // Declaro la variable mejor
+    mejor = max(ladoIzq['mejor'] + ladoDer['sinBordeIzq'],
+                ladoDer['mejor'] + ladoIzq['sinBordeDer'])
+    
+    // Me ocupo de la variable sinBordeIzq
+    sinBordeIzq = max(ladoIzq['sinBordeIzq'] + ladoDer['sinBordeIzq'],
+                      ladoIzq['sinBordes'] + ladoDer['mejor'])
+    
+    // Me ocupo de la variable sinBordeDer
+    sinBordeDer = max(ladoDer['sinBordeDer'] + ladoIzq['sinBordeDer'],
+                      ladoDer['sinBordes'] + ladoIzq['mejor'])
+    
+    // Me ocupo de la variable sinBordes
+    sinBordes = max(ladoIzq['sinBordes'] + ladoDer['sinBordeDer'],
+                    ladoIzq['sinBordeIzq'] + ladoDer['sinBordes'])
+
+  return {'mejor': mejor,
+          'sinBordeIzq': sinBordeIzq,
+          'sinBordeDer': sinBordeDer,
+          'sinBordes': sinBordes}
+
+def maxAlfajores(A):
+    res = maxAlfajoresAux(A, 0, len(A))['mejor']
+    return res

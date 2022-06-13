@@ -1,0 +1,141 @@
+// Ex Padron
+Nos encargaron implementar un Padron que mantiene una base de
+datos de personas, con DNI, nombre, fecha de nacimiento y un codigo de
+identificacion alfanumerico.
+- El DNI es un entero (y es ́unico).
+- El nombre es un string. El largo del nombre esta acotado por 20
+caracteres.
+- El codigo de identificacion es un string (y es unico).
+- La fecha de nacimiento es un dıa de 1 a 365 (sin bisiestos) y un año.
+- Sabemos ademas la fecha actual y por lo tanto la edad de cada
+persona.
+Ademas de poder agregar y eliminar personas del Padron se desea
+poder realizar otras consultas en forma eficiente
+
+Nos piden que nos concentremos principalmente en las siguientes:
+1. Agregar una persona nueva. //  O(l + log n)
+2. Dado un codigo, borrar a la persona. // O(l + log n)
+3. Dado un codigo, encontrar todos los datos de la persona. // O(l)
+4. Dado un DNI, encontrar todos los datos de la persona. // O(log n)
+5. Decir cuantas personas estan en edad jubilatoria (i.e. tienen
+65 años o mas) // O(1)
+donde:
+- n es la cantidad de personas en el sistema.
+- l es la longitud del codigo recibido como parametro
+
+TAD Persona ES enum(codigo, dni, nombre, fechaNacimiento)
+TAD Padron
+	observadores basicos
+	fechaActual : padron -> fecha
+	DNIs : padron -> conj(DNI)
+	nombre : DNI d × padron p -> nombre {d ∈ DNIs(p)}
+	edad : DNI d × padron p -> nat {d ∈ DNIs(p)}
+	codigo : DNI d × padron p -> codigo {d ∈ DNIs(p)}
+	diaCumple : DNI d × padron p -> nat {d ∈ DNIs(p)}
+	generadores
+	crear : fecha hoy -> padron
+	avanzDia : padron p -> padron {sePuedeAvanzar(p)}
+	agregar : persona t × padron p -> padron {dni(t) ∈ DNIs(p) ∧ codigo(t) ∈ codigos(p) ∧
+	nacimiento(t) ≤ fechaActual(p)}
+	borrar : DNI d × padron p -> padron {d ∈ DNIs(p)}
+otras operaciones
+	codigos : padron -> conj(codigo)
+	persona : codigo c × padron p -> persona {c ∈ codigos(p)}
+	tienenAños : nat × padron -> nat
+	jubilados : padron -> nat
+Axiomas:
+		(...)
+Fin TAD
+
+Representación:
+	Padron se representa con estr donde 
+		estr es tupla ⟨	porCodigo:	diccTrie(codigo,persona),
+										porDNI: 	diccAVL(dni,persona),
+										jubilados: nat ⟩
+						
+		persona es tupla ⟨dni: nat,
+											codigo: string,
+											nombre: string,
+											dia: nat,
+											año: nat⟩
+	Ademas de lo anterior nos piden que dada una edad, se pueda saber cuantas personas
+	tienen esa edad con una complejidad temporal de O(1)
+	Pensar que estructura elegir si:
+	1) Sabemos que la edad de las personas nunca supera los 200 años
+	2) Cuando se crea un padron ademas de la fecha, recibe como parametro la edad maxima
+	que puede tener una persona (habria que modificar el TAD tambien).
+	Ademas de lo anterior nos piden que avanzar el dia actual lo hagamos en O(m), donde
+	m es la cantidad de personas que cumplen años en el dia que se llega luego de pasar.
+	- ¿Que agregamos?
+	- ¿Que hace falta para mantenerlo?
+	En resumen se pide:
+	- Agregar persona: O(l + log n)
+	- Borrar persona: O(l + log n)
+	- Encontrar persona por codigo: O(l)
+	- Encontrar persona por DNI: O(log n)
+	- Cantidad de jubilados: O(1)
+		Nuevo:
+	- Saber cuantas personas tienen una edad: O(1)
+	- Pasar de dia: O(m), m = cantidad de personas que cumplen en el dia. 
+	
+	estr es tupla ⟨	porCodigo:	diccTrie(string,persona),
+									porDNI: 	diccAVL(nat,persona),
+									cantPorEdad: arreglo_dimensionable(nat), // long = 200
+									cumplenEn: arreglo_dimensionable(conjAVL(persona)),//long = 365
+									dia: nat,
+									año: nat,
+									jubilados: nat ⟩
+---
+function Jubilados(in e: estr) → res : nat
+res ← e.jubilados // O(1)
+end function
+
+function TienenAños(in e: estr, in edad: nat) → res : nat
+res ← e.cantPorEdad[edad] // O(1)
+end function
+
+function Agregar(inout e: estr, in p: persona)
+	definir (e.porDNI , p.DNI , p) 	// O(log n + copy (p))
+	definir (e.porCodigo, p.Codigo, p) // O(l + copy (p))
+	y ← calcularEdad(p, e) // O(1)
+	if y ≥ 65 then . O(1)
+		e.jubilados ← e.jubilados + 1
+	end if
+	e.cantPorEdad[y] ← e.cantPorEdad[y] + 1 // O(1)
+	Agregar(e.CumplenEn[p.dia], p) // O(log m + copy (p))
+end function
+// La complejidad del algoritmo es O(log n + l + copy (p) + log m).
+// Notemos que:
+// - m ≤ n por lo cual O(log m) ≤ O(log n)
+// - O(copy(p)) = O(l)
+// Por lo tanto la complejidad es O(log n + l)
+
+function Borrar(inout e: estr, in cod: string)
+	p ← obtener (e.porCodigo, cod) //  O(l). Devuelve por referencia
+	borrar (e.porDNI , p.DNI ) // O(log n + borrar (p))
+	y ← calcularEdad(p, e)  // O(1)
+	if y ≥ 65 then // O(1)
+		e.jubilados ← e.jubilados − 1
+	end if
+	e.cantPorEdad[y] ← e.cantPorEdad[y] − 1 // O(1)
+	eliminar(e.CumplenEn[p.dia], p) // O(log m + borrar (p))
+	borrar(e.porCodigo, cod) // O(l + borrar (p))
+end function
+// La complejidad del algoritmo es O(log n + l + borrar (p) + log m).
+// Notemos que:
+// - m ≤ n por lo cual O(log m) ≤ O(log n)
+// - O(borrar(p)) = O(l)
+// Por lo tanto la complejidad es O(log n + l)
+
+function AvanzarDıa(inout e: estr)
+	avanzarUnDia(e) // O(1)
+	for p in e.cumpleEn[e.dia] do  // O(log m)
+		y ← calcularEdad(p, e)  // O(1)
+		if y = 65 then // O(1)
+			e.jubilados ← e.jubilados + 1
+		end if
+			e.cantPorEdad[y − 1] ← e.cantPorEdad[y − 1] − 1 // O(1)
+			e.cantPorEdad[y ] ← e.cantPorEdad[y ] + 1 // O(1)
+	end for
+end function
+// Entonces la complejidad del algoritmo es O(log m)

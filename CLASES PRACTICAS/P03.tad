@@ -1,0 +1,191 @@
+******* P02 TADS EN 2 NIVELES ******
+// EX 1 REPRODUCTOR DE MUSICA
+Se nos pide modelar mediante TADs un servicio de musica en internet. El servicio
+provee un catalogo de canciones. Cada cancion pertenece a un genero musical. Los usuarios
+pueden reproducir canciones del catalogo. Se nos pide saber cuantas veces se reprodujo cada
+cancion y cuantas canciones se reprodujeron de cada genero.
+
+TAD cancion ES String
+TAD genero ES String
+
+
+TAD es Reproductor
+Géneros:	stf
+Observadores Básicos:
+		catalogo: stf -> dicc(cancion, genero)
+		reproducciones: stf s × cancion c -> nat {c ∈ claves(s)}
+Generadores:
+		nuevoCat: dicc(cancion, genero) -> stf
+		reproducir: stf s × cancion c -> stf {c ∈ claves(s)}
+Otras Operaciones:
+		reproduccionesPorGenero: stf × genero -> nat 
+Axiomas:
+		catalogo(nuevoCat(cat)) ≡ cat
+		catalogo(reproducir(s,c)) ≡ catalogo(s)
+		
+		reproducciones(nuevoCat(cat), c) ≡ 0
+		reproducciones(reproducir(s,c), c') ≡ if c=c' then  1 + reproducciones(s,c) else reproducciones(s,c) fi
+		
+		reproduccionesPorGenero(nuevoCat(cat),g) ≡ 0
+		reproduccionesPorGenero(reproducir(s,c),g) ≡ reproduccionesPorGenero(s,g) + β(obtener(c,catalogo(s))=g) 
+		
+Fin TAD
+
+// EX 2 LABERINTO DE ACERTIJOS
+
+En la facultad de exactas se decidio organizar competencias de acertijos matematico. Los
+acertijos se categorizan con un numero de complejidad del 1 al 5 y se organizan formando un laberinto.
+
+El objetivo de la competencia es ser el primero en atravesar el laberinto. Todos los jugadores
+comienzan en un acertijo inicial. Al resolver tienen la posibilidad de avanzar en el laberinto.
+Cuando un jugador resuelve un acertijo obtiene acceso a mas acertijos nuevos. No obstante,
+el jugador debe elegir con cual de estos nuevos acertijos quiere enfrentarse. Esta eleccion lo
+reestringe a un camino en el laberinto. Todos los caminos posibles terminan en un acertijo final.
+No existen ciclos en el labertinto.
+
+Los jugadores tienen completo conocimiento de las relaciones entre los acertijos y sus dificultades. La 
+temporada termina al ser resuelto el acertijo final y el ganador es lo haga.
+
+Se pide especificar un tad que maneje la informacion administrativa de cada competencia. Se deben conocer
+los acertijos y la relacion entre ellos, asi como sus dificultades. Ademas, debe mantener informacion sobre
+los jugadores, en que acertijo se encuentram y cuales resolvieron, e imponer las reestricciones del laberinto
+a la hora de moverse por el. La temporada debe finalizar cuando un jugador resuelva el acertijo final, luego de
+esto el jugador pasa a ser el ganador de la temporada y ningun otro jugador puede resolver acertijos.
+---
+Idea: primero, modelar el tad de abajo o el estatico -> Laberinto
+			segundo, modelar el tad de arriba o el dinamico -> Temporada
+
+TAD acertijo ES nat
+
+TAD Laberinto
+Géneros:	laberinto
+Observadores Básicos:
+	acertijos: laberinto -> conj(acertijo)
+	dificultad: laberinto l × acertijo a -> nat {a ∈ acertijos(l)}
+	opciones: laberinto l × acertijo a -> conj(acertijo) {a ∈ acertijos(l)}
+ 
+	
+Generadores:
+	nuevoLab: acertijo × dificultad d -> laberinto {1<=d<=5}
+	agAcertijo: laberinto × acertijo a × nat d × conj(acertijo) prev -> laberinto 
+	{¬ (a ∈ acertijos(l)) ∧ 1<=d<=5 ∧ prev ⊆ acertijos(l) ∧ ¬Ø?(prev)}
+
+Otras Operaciones:
+	acertijoInicial: laberinto -> acertijo
+	acertijosFinales: laberinto -> conj(acertijo)
+	filtrarAcertijosFinales: laberinto l × conj(acertijo) c -> conj(acertijo) {c ∈ acertijos(l)}
+Axiomas:
+	acertijos(nuevoLab(a,d)) ≡ {a}
+	acertijos(agAcertijo(l,a,d,prev)) ≡ acertijos(l) U {a}
+	
+	dificultad(nuevoLab(a,d), a') ≡ d
+	dificultad(agAcertijo(l,a,d,prev), a') ≡ if a = a' then d else dificultad(l,a') fi
+	
+	opciones(nuevoLab(a,d), a') ≡ Ø
+	opciones(agAcertijo(l,a,d,prev), a') ≡ if a = a' then Ø else 
+																						if a' ∈ prev then opciones(l,a') U {a} 
+																						 		else opciones(l,a')
+																							fi
+																				fi
+  acertijoInicial(nuevoLab(a,d)) ≡ a
+	acertijoIncial(agAcertijo(l,a,d,prev)) ≡ acertijoInicial(l)
+	
+	acertijosFinales(l) ≡ filtrarAcertijosFinales(l, acertijos(l))
+	
+	filtrarAcertijosFinales(l,c) ≡ if Ø?(c) then Ø else
+																					if Ø?(opciones(l,dameUno((c)))) then Ag(dameUno(c),filtrarAcertijosFinales(l,sinUno(c)))
+																					 else filtrarAcertijosFinales(l,sinUno(c))
+																		 		 	fi
+																		fi
+Fin TAD
+
+TAD jugador ES string
+
+TAD Temporada
+Géneros:	tmp
+Observadores Básicos:
+	jugadores: tmp -> conj(jugador)
+	acertijoActual: tmp t × jugador j -> conj(acertijos) {j ∈ jugadores(t)}
+	resueltos: tmp t × jugador j -> conj(acertijos)	{j ∈ jugadores(t)}
+	laberinto: tmp -> laberinto
+
+Generadores:
+	nuevaTmp: conj(jugador) × laberinto l -> tmp {#acertijosFinales(l)=1}
+	resuelveAcertijo: tmp t × jugador j × acertijo a -> tmp {¬finalizada?(t) j ∈ jugadores(t) ∧ a ∈ opciones(laberinto(t),acertijoActual(t,j))}
+	resuelveFinal: tmp t × jugador j -> tmb	 {¬finalizada?(t) j ∈ jugadores(t)}
+	
+Otras Operaciones:
+	finalizada?: tmp -> bool
+
+Axiomas:
+	jugadores(nuevaTmp(js,l)) ≡ js
+	jugadores(resuelveAcertijo(t,j,a)) ≡ jugadores(t)
+	jugadores(resuelveFinal(t,j)) ≡ jugadores(t)
+	
+	acertijoActual(nuevaTmp(js,l), j) ≡ acertijoInicial(l)
+	acertijoActual(resuelveAcertijo(t,j,a), j') ≡ if j=j' then a else acertijoActual(t,j') fi
+	acertijoActual(resuelveFinal(t,j), j') ≡ acertijoActual(t,j')
+	
+	resueltos(nuevaTmp(js,l), j) ≡ Ø
+	resueltos(resuelveAcertijo(t,j,a), j')) ≡ if j=j' then resueltos(t,j) U {actual(t,j)} else resueltos(t,j') fi
+	resueltos(resuelveFinal(t,j), j') ≡ if j=j' then resultos(t,j) U {actual(t,j)} else resueltos(t,j')
+	
+	laberinto(nuevaTmp(js,l)) ≡ l
+	laberinto(resuelveAcertijo(t,j,a)) ≡ laberinto(t)
+	laberinto(resuelveFinal(t,j)) ≡ laberinto(t)
+	
+	finalizada?(nuevaTmp(js,l)) ≡ false
+	finalizada?(resuelveAcertijo(t,j,a)) ≡ false
+	finalizada?(resuelveFinal(t,j)) ≡ true
+	
+Fin TAD
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		
+		

@@ -1,0 +1,31 @@
+// Sacado de apuntes de Algoritmos basicos
+
+
+Swap(inout x: nat, inout y:nat)
+Pre ≡ true
+Post ≡ Los swapea
+Costo ≡ O(1)
+
+PrimeroMayor(in A: arreglo(nat), in x:nat)-> res: nat
+Pre ≡ ordenado?(A), tiene que existir ese indice
+Post ≡ devuelve el primer indice del arreglo que es mayor estricto a x
+Costo ≡ O(log n)
+Ej: PrimerMayor([1,2,4,6,10,12], 9) -> 4
+
+UltimoMenor(in A: arreglo(nat), in x:nat) ->res:nat
+Pre ≡ ordenado?(A), tiene que existir ese indice
+Post ≡ devuelve el ultimo indice del arreglo que es menor estricto a x
+Costo ≡ O(log n)
+Ej: PrimerMenor([1,2,4,6,10,12], 5) -> 2
+
+PosMaxima(in A:arreglo(nat)) -> res:nat
+Pre ≡ hay un indice cuyo valor se asemeja al ejercicio de la montaña
+Post ≡ devuelve el indice donde los anteriores son menores estrictos y los siguientes son mayores estrictos
+Costo ≡ O(log n)
+Ej: PosMaxima([-1, 3, 8, 22, 30, 22, 8, 4, 2, 1]) -> 4
+
+InsertarOrdenado(inout A:arreglo(nat), in x:nat)
+Pres ≡ ordenado?(A)
+Post ≡ inserta ordenado un numero a un arreglo
+Costo: O(n)
+Ej: InsertarOrdenado([1,2,4,5], 3) -> [1,2,3,4,5]

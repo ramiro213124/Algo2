@@ -1,0 +1,51 @@
+// Ex 5 Matriz finita
+
+
+
+
+
+// Ex 13
+Representacion:
+torneo se representa con estr donde 
+					estr es tupla ⟨ equipos: diccAVL(equipo,itLista),
+													posiciones: lista(tupla⟨posicion: nat, puntaje: nat, cantEquipos: nat⟩)
+													⟩
+---
+iPuntos(in t : torneo, in e : equipo) → res : nat
+	itPosiciones <- significado(t.equipos, e) // O(log n)
+	res <- siguiente(itPosiciones).puntaje		// O(1)
+	// O(log n) + O(1) = O(log n)
+
+iPos(in t : torneo, in e : equipo) → res : nat
+	itPosiciones ← significado(t.equipos, e) // O(log n)
+	res ← Siguiente(itPosiciones).posicion		// O(1)		 		
+	// O(log n) + O(1) = O(log n)
+
+iRegPartido(in t : torneo, in e : equipo)
+	itPosiciones ← significado(t.equipos, e)
+	nodoActual ← Siguiente(itPosiciones)
+	//Actualicemos el nodo viejo
+	if nodoActual.cantEquipos == 1 then
+	//Si no quedaban equipos en esa posición, lo eliminamos
+	 EliminarSiguiente(itPosiciones)
+	else
+	 + + nodoActual.posicion
+	 − − nodoActual.cantEquipos
+	end if
+	//Actualizamos o creamos la posición nueva
+	if HayAnterior(itPosiciones) ∧L Anterior(itPosiciones).puntaje == nodoActual.puntaje + 1 then
+	//Si al sumar el punto va a estar empatado en puntaje con otros equipos
+	 + + nodoAnterior.cantEquipos
+	 definir(equipo, Retroceder(itAnterior), t.equipos)
+	else
+	//Vamos a tener que crear un nuevo nodo asociado a la nueva posición del equipo
+	 nuevoNodo ← 〈nodoActual, nodoActual.puntaje + 1, 1〉
+	 AgregarComoAnterior(itPosiciones, nuevoNodo)
+	end if
+	
+Complejidad: Esta función parece más difícil pero no lo es tanto. Nuevamente, la búsqueda y obtención de un
+elemento en un árbol tiene costo logarítmico. Pero el resto de las operaciones son O(1) (se podría hacer un análisis
+más detallado pero es trivial) excepto definir que como tiene costo logarítmico, no nos hace a la cuestión. Finalmente,
+la complejidad total es O(log(n)).
+Aclaración: definir se podría haber evitado manteniendo un iterador al nodo del AVL. Queda de tarea hacer esa
+modificación para que sea más eficiente.

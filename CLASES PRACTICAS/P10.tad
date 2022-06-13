@@ -1,0 +1,180 @@
+// Clase de D&C, by Cristian Cossio
+										***** Ejercicio 1  *****
+									// Maximo de una montaña //
+Dado un arreglo montaña de longitud n, queremos encontrar al maximo.
+La complejidad del algoritmo que resuelva el problema debe ser O(log n)
+- Un arreglo de enteros montaña esta compuesto por una secuencia
+estrictamente creciente seguida de una estrictamente decreciente
+- Por ejemplo, para un arreglo [-1, 3, 8, 22, 30, 22, 8, 4, 2, 1], el
+maximo esta en la posicion 4 y vale 30
+- Suponemos que hay al menos un elemento antes y despues que el
+maximo, ya que las secuencias creciente y decreciente tienen al menos
+2 elementos
+--- 
+
+Maximo(A, l, r) → int
+	if l = r then // Rango de un solo elemento
+	return A[l]
+	m ← (l + r) / 2
+	// Si es creciente seguro el maximo esta a la derecha de m
+	if A[m] < A[m + 1] then
+	return Maximo(A, m+1, r); // T(n/2)
+	else
+	return Maximo(A, l, m);   // T(n/2)
+// Complejidad: O(log n). Misma justificacion que en la busqueda binaria.
+// a=1, c=2, f(n)=O(1)
+// Teorema Maestro caso 
+
+									***** Ejercicio 2 *****
+							// Subsecuencia de suma maxima //
+Dada una secuencia de n enteros, se desea encontrar el maximo valor que
+se puede obtener sumando elementos contiguos.
+- Por ejemplo, para la secuencia [3, -1, 4, 8, -2, 2, -7, 5], este valor es
+14, que se obtiene de la subsecuencia [3, -1, 4, 8]
+- Si una secuencia tiene todos numeros negativos, se entiende que su
+subsecuencia de suma maxima es la vacia, por lo tanto el valor es 0
+- Se desea hallar un algoritmo D&C que lo resuelva en O(n log n)
+---
+
+SumaSubsecuencia(in A:arreglo(nat)) → res:int
+	if |A| = 1 then // Rango de un solo elemento
+	return max(0, A[0])
+	s1 ← SumaSubsecuencia(A[0...n/2]) 				// T(n/2)
+	s2 ← SumaSubsecuencia(A[n/2...n]) 				// T(n/2)
+	s3 ← SumaAlMedio(A) 											// O(n)
+	return max(s1, s2, s3)
+	
+SumaAlMedio(in A:arreglo(nat)) → int
+	s1 ← SumaHaciaDerecha(A[n/2...n]) 				 // O(n)
+	s2 ← SumaHaciaDerecha(reverso(A[0.. n/2])) // O(n)
+	return s1 + s2
+	
+SumaHaciaDerecha(in A:arrelgo(nat)) → int
+	maxSuma ← 0 													// O(1)
+	sumaAcumulada ← 0 										// O(1)
+	for i = 0 to n-1 do  									// O(n)
+		sumaAcumulada += A[i] 								// O(1)
+		maxSuma ← max(maxSuma, sumaAcumulada) // O(1)
+	end for
+	return maxSuma
+// Recurrencia de SumaSubsecuencia: T(n) = 2.T(n/2) + O(n)
+// Observar que es la misma ecuacion que MergeSort
+// Podemos demostrar de igual forma que la complejidad es O(n log n)
+
+													***** Ejercicio 3 *****
+													// Matriz creciente //
+Se tiene una matriz A de n x n numeros naturales, de manera que A[i,j] representa al
+elemento en la fila i y columna j (1 ≤ i, j ≤ n). Se sabe que el acceso a un elemento
+cualquiera se realiza en tiempo O(1). Se sabe tambien que todos los elementos de la
+matriz son distintos y que todas las filas y columnas de la matriz estan ordenadas de
+forma creciente (es decir, i<n ⇒ A[i,j] < A[i+1,j] y j<n ⇒ A[i,j] < A[i,j+1]).
+1) Implementar, utilizando la tecnica de dividir y conquistar, la funcion:
+						esta(in n: nat, in A: matriz(nat), in e: nat) → bool
+que decide si un elemento e dado aparece en alguna parte de la matriz. Se debe
+dar un algoritmo que tome tiempo estrictamente menor que O(n^2). Notar que la
+entrada es de tamaño O(n^2).
+2) Calcular y justificar la complejidad del algoritmo propuesto. Para simplificar el
+calculo, se puede suponer que n es potencia de dos.
+---
+
+
+esta(in n: nat, in A: matriz(nat), in e: nat) → bool
+	return EstaM(A, e, 0, n, 0, n)
+	
+EstaM(in A:matriz(nat), in e:nat, in x1:nat, in x2:nat, in y1:nat, in y2:nat) → bool
+	if (x1 + 1 = x2 and y1 + 1 = y2) then
+		return e == A[x1][y1]
+	mx ← (x1 + x2)/2
+	my ← (y1 + y2)/2
+	if e ≤ A[mx][my] then
+		return  EstaM(A, e, x1, mx , y1, my ) or
+					  EstaM(A, e, mx , x2, y1, my ) or
+					  EstaM(A, e, x1, mx , my , y2)
+	else
+		return  EstaM(A, e, mx , x2, y1, my ) or
+						EstaM(A, e, x1, mx , my , y2) or
+						EstaM(A, e, mx , x2, my , y2)
+
+// Queremos calcular la complejidad en funcion del tamaño de la
+// entrada. El problema es que el tamaño de la entrada es n^2
+// Llamemos m = n^2 y calculemos la complejidad en funcion de m
+// 							T(m) = 3.T(m/4) + O(1)
+// O(1) ⊆ O(m^(log₄3)), caemos en el caso 1 del teorema maestro
+// Entonces por el teorema, T(m) = Θ(m^(log₄3))
+// Como m = n^2, tenemos que T(n^2) = O(n^(2.log₄3)) ⊆ O(n^1,58), que es
+// estrictamente mejor que O(n^2).
+
+											***** Ejercicio 4 *****
+										// Maxima suma en arbol //
+Dado un  ́arbol binario de numeros enteros, se desea calcular la maxima
+suma de los nodos pertenecientes a un camino entre dos nodos
+cualesquiera del arbol.
+- Un camino entre dos nodos n1 y n2 esta formado por todos los nodos
+que hay que atravesar en el arbol para llegar desde n1 hasta n2,
+incluyendolos a ambos.
+- Un camino entre un nodo y si mismo esta formado ́unicamente por
+ese nodo.
+- Suponemos que el arbol esta balanceado.
+- Dar un algoritmo MaximaSumaCamino(a : ab(int)) → int que
+resuelva el problema utilizando la tecnica de Divide & Conquer.
+
+a) El algoritmo debe tener una complejidad temporal de peor caso igual o
+mejor que O(n log n) siendo n la cantidad de nodos del ́arbol.
+b) El algoritmo debe tener una complejidad temporal de peor caso igual o
+mejor que O(n) siendo n la cantidad de nodos del arbol.
+c) Supongamos que el ́arbol NO esta balanceado. El algoritmo debe tener una complejidad
+temporal de peor caso igual o mejor que O(n) siendo n la cantidad de nodos del ́arbol.
+Por ejemplo, podrıamos tener que resolver un arbol degenerado.
+---
+a)	
+MaximaSumaCamino(A : ab(int)) → int
+	if nil?(A) then
+	return 0 . O(1)
+	S1 ← MaximaSumaCamino(izq(A)) // T(n/2)
+	S2 ← MaximaSumaCamino(der(A)) // T(n/2)
+	S3 ← raiz(A) + MaxDesdeRaiz( izq(A) ) + MaxDesdeRaiz( der(A) ) // O(n)
+	return max(S1, S2, S3)
+	
+MaxDesdeRaiz(A : ab(int)) → int
+	if nil?(A) then
+		return 0 															// O(1)
+	C0 ← 0 																	// O(1)
+	C1 ← raiz(A) 														// O(1)
+	C2 ← raiz(A) + MaxDesdeRaiz( izq(A) ) 	// T(n/2)
+	C3 ← raiz(A) + MaxDesdeRaiz( der(A) )   // T(n/2)
+	return max(C0, C1, C2, C3)
+
+// MaxDesdeRaiz: Tenemos que T'(n) = 2.T'(n/2) + O(1).
+// Por el primer caso del teorema maestro la complejidad es Θ(n).
+// MaximaSumaCamino: su ecuacion es T(n) = 2.T(n/2) + O(n).
+// Por el segundo caso del teorema su complejidad es Θ(n log n).
+
+b)
+MaxCamino(A : ab(int)) → 〈sumaCamino : int, sumaCaminoRaiz : int〉
+	if nil?(A) then
+		return 〈0, 0〉 															 // O(1)
+	dataIzq ← MaxCamino( izq(A) ) 									// T(n/2)
+	dataDer ← MaxCamino( der(A) ) 									// T(n/2)
+	S1 ← dataIzq.sumaCamino 												// O(1)
+	S2 ← dataDer.sumaCamino 												// O(1)
+	S3 ← raiz(A) + dataIzq.sumaCaminoRaiz + dataDer.sumaCaminoRaiz 					// O(1)
+	cam ← max(S1, S2, S3) 																									// O(1)
+	desdeR ← max(0, raiz(A), raiz(A) + dataIzq.sumaCaminoRaiz, raiz(A) + dataDer.sumaCaminoRaiz) // O(1)
+	return 〈cam, desdeR〉
+	
+MaximaSumaCamino(A : ab(int)) → int
+	return MaxCamino(A).camino
+
+	// La complejidad de MaximaSumaCamino esta dada por la de
+	// MaxCamino, cuya relacion de recurrencia es:
+	//            T(n) = 2.T(n/2)+ O(1)
+	// Por el primer caso del teorema maestro, la complejidad es Θ(n)
+
+c)
+- Podemos usar el mismo algoritmo que en b), pero NO podemos usar
+teorema maestro para justificar la complejidad, pues los llamados
+recursivos NO necesariamente son T(n/2).
+- Para justificar que sigue siendo O(n) podemos hacer el calculo de
+costo usando el ́arbol de la recursion. Cada uno de los n nodos son
+visitados por ́unica vez y tenemos O(1) costo en cada nodo, por lo
+que el costo final termina siendo O(n).

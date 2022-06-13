@@ -1,0 +1,74 @@
+******* P01 INTRODUCCION TADS ******
+// EX 1 AGENDA
+Necesitamos armar una agenda en la cual podemos registrar compromisos para un dia
+Por ejemplo: "turno con el dentista de 16 a 17hs" o "recesion de catedra de 18 a 20hs"
+no hay problema con que los compromisos registrados en la agenda se solapen. De hecho,
+nos interesa saber, dada una hora del dia, que compromisos tenemos en ese momento. Ademas,
+dado un intervalo de horas quisieramos poder saber que hora del intervalo es la mas ocupada en la agenda.
+
+TAD compromiso ES string
+TAD hora ES nat
+
+TAD Agenda
+Géneros:	agenda
+Observadores Básicos:
+	compromisos: agenda × hora -> conj(compromiso)
+Generadores:
+	nuevaAgen: -> agenda
+	registrar: agenda a × compromiso × hora d × hora h -> agenda {desde <= hasta ∧ ¬(compromiso ∈ compromisos(a)}
+Otras Operaciones:
+	horaMasOcupada: agenda × hora d × hora h -> hora {desde <= hasta}
+Axiomas:
+	compromisos(nuevaAgen, hora) ≡ Ø
+	compromisos(registrar(a,c,d,h), h') ≡ compromisos(a,hora) U if d<=hora<=h then
+		{c}
+	else
+		Ø
+	fi
+
+	horaMasOcupada(a,d,h) ≡ if d = h then h else if #compromisos(a,d) > #compromisos(a,horaMasOcupada(a,d+1,h))  then
+		d
+	else
+		horaMasOcupada(a,d+1,h)
+	fi
+Fin TAD
+// EX 2 INSOPORTABLES
+Insoportables es un probrama televisivo muy exitoso que sale al aire todas las noches, en él
+se debate acerca de las relaciones entre los personajes de la farandula (los "famosos"). Con el tiempo,
+distintos famosos se van incorporando al programa (y nunca dejadn de pertenecer al mismo).
+Debido a la gran cantidad de peleas y reconciliaciones, los productores nos encargaron el desarrollo
+de  un sistema que permita saber en todo momento quienes estan peleados y quienes no. Ademas, los productores
+quieren poder determinar quien es el famoso que actualmente esta involucrado en la mayor cantidad de peleas.
+Las peleas del pasado no interesan.
+
+TAD famoso ES String
+
+TAD Insoportables
+Géneros:	ins
+Observadores Básicos:
+	famosos: ins  -> conj(famosos)
+	peleadosCon: ins i × famoso f -> conj(famosos) {f ∈ famosos(i))}
+Generadores:
+	nuevoIns: -> ins
+	agregarFamoso: ins i × famoso f -> ins {¬(f ∈ famosos(i))}
+	pelear: ins i × famoso f1 × famosos f2 -> inst {f1 ∈ famosos(i) ∧ f2 ∈ famosos(i)}
+Otras Operaciones:
+	famosoEnMasPeleas: ins i -> famoso f {f ∈ famosos(i)}
+Axiomas:
+	famosos(nuevoIns) ≡ Ø
+	famosos(agregarFamoso(i,f)) ≡ famosos(i) U {f}
+	famosos(pelear(i,f1,f2)) ≡ famosos(i)
+
+	// peleadosCon(nuevoIns, f) ≡ Ø Esto no es correcto dado que por reestricciones nunca puede llegar este caso.
+	peleadosCon(agregarFamoso(i,f), f') ≡ if f=f' then Ø else peleadosCon(f') fi
+	peleadosCon(pelear(i,f1,f2) f') ≡ if f'∈{f1,f2} then
+		Ag(f'-{f1,f2},peleadosCon(f'))
+	else
+		peleadosCon(f')
+	fi
+
+	famosoEnMasPeleas(i) ≡ if #(peleadosCon(i, dameUno(famosos(i)))) > #peleadosCon(famosoEnMasPeleas(i), sinUno(famosos(i)))
+												then dameUno(famosos(i))
+												else #peleadosCon(famosoEnMasPeleas(i), sinUno(famosos(i)))
+												fi
+ Fin TAD

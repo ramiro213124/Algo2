@@ -1,0 +1,420 @@
+// Ordenamiento
+// Ex 2
+Convendria usar insertionSort y empezar desde i = tam(s')
+
+// Ex 3
+// Pre: k<=n
+// Se quiere buscar los k elementos mas chicos de un arreglo de tamaño n
+Ej:
+[3,5,2,6,4,10] n=6, k ∈ {1,2,3,4,5,6}
+k=1 ⇒ [2]
+k=2 ⇒ [2,3]
+k=3 ⇒ [2,3,4]
+k=4 ⇒ [2,3,4,5]
+k=5 ⇒ [2,3,4,5,6]
+k=6 ⇒ [2,3,4,5,6,10]
+
+kMasChicos (in A: arreglo(nat), in k:nat) -> res: arreglo(nat)
+	res <- crearArreglo(k)			// O(k)
+	pos <- 0										// O(1)
+	for i desde 1 hasta k do		// O(k.n)
+		min <- minimo(A)					// O(n)
+		res[0]= min								// O(1)	
+		quitar(min,A)							// O(n)
+		pos++		
+	end for
+// Cuadno k> log n conviene ordenar priemro el arreglo con por ej mergeSort y luego 
+// simplemete copiear en res k elementos, complejidad: O(k + nlog n)
+
+// Ex 4
+Una forma:
+Utilizaria el metodo de comprimir cada secuencia en una tupla, donde cada tupla sea el intervalo
+de dicha secuencia. Luego haria merge sort y finalmente haria un doble for donde me guarde el max
+en cada iteracion para que no hayan repetidos y me queden un res ordenado en O(m + n.log n) donde
+m es la cantidad total de elementos.
+
+Una Mejor forma:
+unirOrdenados (in A:arreglo(arreglo(nat))) -> res: arreglo(nat)
+	if(tam(A) = 1){
+		res <- A[1]
+	} else{
+		res <- Merge( unirOrdenados(primeraMitad(A)), unirOrdenados(segundaMitad(A)) )
+	}
+// ℂompljidad: m log n, donde m es la cantidad total de elementos.
+
+// Ex 5
+ordenarFrecuencia(in/out a: arreglo(nat) )
+    MergeSort(a)
+    arreglo(⟨nat, nat⟩) d ← Compactar(a)
+    MergeSort(d) //Ordena comparando los segundos valores de las tuplas
+    a ← Descompactar(d)
+		// Complejidad: 
+		// MergeSort es O(n.log n)
+		// Compactar es O(n) (por recibir la lista ordenada como pre).
+		// Descompactar es O(n)
+		// O(n log n) + O(n) + O(n) = O(n log n) ya que O(n) ∈ O(n log n)
+		
+Compactar(in A: arreglo(nat)) → res: arreglo(⟨nat, nat⟩)
+  //Recibe un arreglo ordenado a y devuelve un arreglo de tuplas donde:
+  //  El primer elemento de c/tupla corresponde a cada elemento del arreglo a
+  //  El segundo elemento de c/tupla corresponde a la cantidad de apariciones del elemento en a
+  //La cantidad de tuplas es la cantidad de elementos unicos en el arreglo a
+  //Ejemplo de uso: [1,1,2,2,2,4] → compactar → [⟨1,2⟩, ⟨2,3⟩, ⟨4,1⟩]
+  cantElemDistintos ← 0
+  if tam(A) > 0 then    
+      ultimoElem ← A[0]
+      cantElemDistintos ++
+      for i =0...tamaño(A)-1:
+          if ultimoElem ≠ A[i] then
+              cantElemDistintos ++
+              ultimoElem ← A[i]
+          endif
+      endfor
+  endif
+	res ← crearArreglo(cantElemDistintos)
+    nat i ← 0
+    nat j ← 0 
+    while i < tam(A):
+        nat cant ← 0
+        nat elemAContar ← A[i]
+        while i < tam(A) ∧ elemAContar = A[i]:
+            cant++
+            i++
+        endwhile
+        res[j] ← ⟨elemAContar, cant⟩
+        j++
+    endwhile
+
+Descompactar(in A: arreglo⟨nat,nat⟩) → res: arreglo(nat)
+    //Recibe un arreglo de tuplas donde:
+    //  El primer elemento de c/tupla corresponde a cada elemento del arreglo a
+    //  El segundo elemento de c/tupla corresponde a la cantidad de apariciones del elemento en a
+    //La cantidad de tuplas es la cantidad de elementos unicos en el arreglo a
+    //Ejemplo de uso: [⟨1,2⟩, ⟨2,3⟩, ⟨4,1⟩] → descompactar → [1,1,2,2,2,4] 
+		//calculo tamaño de a
+    tamañoRes ← 0
+    for i = 0..tam(A)-1:
+        tamañoA += π₂(A[i])
+    endfor
+		res ← crearArreglo(tamañoRes)
+    nat pos ← 0 
+		for i=0...tam(A)-1
+			for j=0...π₂(A[i])-1
+				res[pos] = π₁(A[i])
+				pos++
+			end for
+		end for
+    endwhile
+// Ex 6
+IDEA: creo una lista(<nat,nat>) que indica los intervalos de cada escalera en la primera iteracion
+Luego, a esa lista la ordeno con respecto al min, luego lo ordeno con respecto al tamaño que sera la
+diferencia del max-min, luego expando los intervalos y hago listaAArreglo y listo. (para ordenar hago doble mergeSort)
+
+// Ex 7
+// Pre: se tiene implementado la estructura AVL
+// Hit: O(n log d) donde n es la cantida de elementos a odenar y d es la cantida de elementos distintos
+Fuente -> whsapp
+ En un avl vas metiendo los elementos de tu lista
+ y cada "nodo" guarda cuantos hay de esa "llave"
+ meterlos todos en el avl es n log d porque a lo sumo hay d elementos en el avl
+ entonces log d worst case meterlos
+ y lo haces n veces
+ (/actualizar el valor que guardan)
+ una vez que tenes todo, podes recorrer el arbol de manera inorder 
+ (siempre a la izquierda cuando podes, despues el nodo actual, despues derecha) y 
+ metiendo cuantos elementos corresponda en función del valor
+ en total a lo sumo haces n operaciones ahí en total
+ así que tenes la lista ordenada en O(n log d + n) = O(n log d)
+ 
+ // Ex 8
+ 1)
+ // Una forma:
+ para el punto 1 lo que había hecho creo era meter todos los elementos de A y B
+ en un dicc con AVL, donde dicc[elemento] = cantidad elemento
+ Lo que haces es:
+ contas cuantos hay de un elemento en particular y lo metes en el AVL directo 
+ (metes el valor y cuantos hay). Para contar cuantos hay de cada uno es O(n) porque 
+ recorres el array y cuando te topas con uno distinto del actual cortas y listo. 
+ Meter a todos en el AVL es n' log(n'). Ahora metés todos los elementos de m en el AVL
+ (con la cantidad correspondiente). En el peor de los casos esto es m log(n' + m).
+ Ahora desencolar todo es n + m. Te queda n + n' log(n') + m log(n' + m) + n + m = O(n + (n' + m) log(n' + m))
+
+ // Otra forma:
+
+ Podes hacer 
+ 1) armar tuplas <num, rep> en O(n)
+ 2) ordenar A : O(n'×log(n'))
+ 3) descomprimir A O(n)
+ 4) ordenar B : O(m×log(m))
+ 5) mergear A y B O(n+m)
+ ---
+ 2) Para mi el enunciado está mal porque dice n' (log n' + m) cuando deberá ser (n' + m) log n' 
+
+ para el punto 2 se  que tengo q hacer un counting/bucketsort,
+ // Una forma:
+ Para el 2 podes hacer:
+ Podes hacer 
+ 1) armar tuplas <num, rep> en O(n)
+ 2) ordenar A : O(n'×log(n'))
+ 3) para cada elem de B binary searchear en A y sumarle 1 a las reps O(m.log(n'))
+ 4) descomprimir A O(m+n)
+ // Otra forma:
+ Para el 2 podes hacer:
+ Podes hacer 
+ 1) armar tuplas <num, rep> en O(n)
+ 2) armar tuplas <num, rep> en O(m)
+ 3) ordenar A y B con mergesort O((n' + m)log (n' + m))
+ 4) descomprimir  O(m+n')
+ 
+ // Ex 11
+ countingSort y listo
+ 
+ // Ex 12
+ ordenarDatos (inout A:arreglo(nat))
+ 	menoresA20 <- Vacia()
+	entre20y40 <- Vacia()
+	mayoresA40 <- Vacia()
+	
+	for i=0...tam(A)-1 do
+		if(A[i]<20) then
+			AgregarAtras(menoresA20,A[i])
+		else if (20<=A[i]<=40) then
+						AgregarAtras(entre20y40,A[i])
+				 end if
+		else AgregarAtras(mayoresA40, A[i])
+		end if
+	end for
+	
+	a <- listaAArreglo(menoresA20)
+	b <- listaAArreglo(entre20y40)
+	c <- listaAArreglo(mayoresA40)
+	
+	selectionSort(a) 
+	selectionSort(c)	// O(n) entre las dos
+	coutingSort(b,20)		// O(n)
+	
+	res <- concatenar(a,b,c)
+// Ex 13
+// Se desea ordenar por string y desp por nat
+// Comparar 2 strings cuesta O(l)
+// Se pide O(nl + n log n)
+1)
+Quiero ordenar en O(nl + nlogn) donde l es la longitud maxima de c/u
+La comparacion de dos strings[l] toma O(l).
+
+Hago un diccTrie vacio que va a guardar <string, lista(tupla(string, nat))>
+Inserto todas las tuplas del arreglo:
+	n elementos → insercion cuesta n*O(l) = O(nl)
+Ordeno las tuplas en funcion del numero: O(n log n)
+Inserto cada numero en una lista (significado) dentro de un diccTrie con strings
+como clave → O(nl)
+Como el arreglo estaba ordenado, los nats dentro de cada lista correspondiente a un string
+tambien fueron insertados ordenados.
+Ahora recorro el trie en orden y voy linkeando cada lista a mi lista resultado
+
+ordenar(in A: arreglo())
+	MergeSort(A) // Usa el primer elemento para comparar O(n log n)
+	diccTrie(string, lista(tupla(string, nat))) D ← Vacio() // O(1)
+	for elem in A do // n iteraciones
+		if Definido?(D,elem) then // O(l)
+			AgregarAtras(D[π₂(elem)], elem) // O(l)
+		else
+			Definir(D, π₂(elem), lista(elem)) // O(l)
+		endif
+	endfor // O(nl)
+
+	R ← ListaVacia() //O(1)
+	while #Claves(D) > 0: //O(l) #(strings unicos) iteraciones
+		m ← Min(Claves(D)) //O(l)
+		R ← R && obtener(m, D) //O(1) + O(l) = O(l)
+		borrar(m, D) //O(l)
+	end while //O(#(strings unicos) * l) ∈ O(nl) ya que #strings_unicos ≤ n
+
+Complejidad final: O(nlogn + nl)
+
+2) Hago el counting en vez del merge, O(nl + n) = O(nl)
+
+// Ex 14
+Ej: [3,3,4,2,1] k= 2 -> [3,3,4,2,1] && [6,6,8,4,2] = [1,2,2,3,3,4,4,6,6,8] 
+// Se pide O(nk log n), n=tam(A)
+ordenarMultiplos (in A: arreglo(nat), in k: nat) -> res:arreglo(nat)
+	mergeSort(A)
+	res <- Vacia()
+	arreglo(arreglo(nat)) ordenados <- crearArreglo(k)
+	for arreglo en ordenados
+		arreglo(n)
+	end for
+	
+	for i=1...k do											// O(k)
+		for j=0...tam(A)-1 								// O(n)
+			ordenados[i-1][j] = i*A[j]			// O(1)
+		end for
+	end for
+	 
+	res<- unirOrdenados(ordenados)  		// O(nk log k) = O(nk log n)
+
+// Ex 15
+// Se pide O(n)
+
+Ej: [1,1,4,5] -> true min-max+1+r= 5-1+1+2=
+		[1,2,3,4] -> false 3+1
+		[5,4,1] -> true
+		[2,1,3,7,5] -> true
+
+tieneAgujero?( in A:arreglo(nat)) -> res:bool
+	n <- tam(A)
+	min <- minimo(A)
+	max <- maximo(A)
+	if min-max+1 > n
+		then res <- true
+	else
+	 	arreglo(bool) C <- crearArreglo(n)	// inicializados en false todos
+		r <- 0
+		for i=1...n do
+			j <- A[i] - min + 1
+			if C[j] = true then
+				r++
+			else
+				C[j] <- true
+			end if
+		end for
+		res <- max-min+1+r != n
+	end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Ex 17
+A[1...n]
+(∀i:nat)(1<=i<=n ⇒L #maschicos(A[i]) <= i)
+Dar un algoritmo que lo ordene en O(n)
+Pre: no hay repetidos, son enteros los numeros.
+Ej: A={-1,1,2,4,3,5,7}
+
+// Ex Parcial 2021 Sorting
+
+Se esta organizando la clasica carrera de San Silvestre y, debido a la situacion actual por el coronavirus, se armaron
+varias tandas de salidas de los corredores. Ası, se necesita armar los resultados finales de toda la competencia.
+El tiempo de carrera de cada participante se calcula como la diferencia en minutos entre su llegada y su salida, y
+por cada tanda de corredores se obtendra una lista ordenada de los participantes segun su tiempo de carrera total.
+Se desea crear una funcion que obtenga la lista ordenada de los primeros p corredores mas r ́apidos, a partir de los
+resultados de todas las tandas:
+Primeros(in p: nat, in tandas: lista(lista(participante))) → res: lista(participante)
+Por ejemplo,
+Primeros(3, [[(Ana, 15), (Beto, 20)], [(Carlos, 11), (David, 12), (Erica, 30)]]) ; [(Carlos, 11), (David, 12), (Ana 15)].
+a) Dar un algoritmo que resuelva el problema y cuya complejidad temporal sea O(t + (p log t)), siendo t la
+cantidad de tandas. Justificar detalladamente que el algoritmo efectivamente resuelve el problema y demostrar
+formalmente que cumple con la complejidad solicitada.
+b) Explicar detalladamente que cambiarıa en el algoritmo (y la complejidad, solo de ser estrictamente necesario)
+si se deseara obtener dos listas con p corredores, una para los profesionales y otra para amateurs suponiendo
+que este  ́ultimo dato tambien estarıa en la tupla de cada participante (i.e., habra un booleano que dice si es
+profesional o no), junto con su nombre y el tiempo de carrera.
+
+---
+ 
+// Se pide O(t + (p log t))
+// t= cantTandas
+IDEA
+Tengo las T tandas ordenadas. Tomo el primer elemento de cada tanda y armo
+una tripla (nombre, velocidad, listaDeLaQueFueSacado) que voy a poner en un
+arreglo (de tamaño t).
+Luego, sobre ese arreglo hago heapify con costo O(t). La comparacion que
+utilizo para armar el minheap va a ser por el elemento ”velocidad” de la tripla.
+Ante empates, tomo cualquiera (por ejemplo, el de la izquierda). Ahora tengo
+un minheap donde estan los 1ros elementos de las T tandas.
+For i in 0...p:
+Saco el elemento min del heap
+Creo una tupla (nombre, velocidad) con los elementos del min
+Tomo el valor listaDeLaQueFueSacado del min
+Obtengo el sig de listaDeLaQueFueSacado (si es que tiene)
+Creo la tupla nueva (nombre, velocidad, listaDeLaQueFueSacado)
+La meto en el heap
+Cuando ya saque los p elementos, termine.
+
+primeros(in p:nat, in tandas: lista(lista(participante))) -> res: lista(participante) {
+	res <- listaVacia() // O(1)
+	unoPorTanda <- CrearArreglo(tam(tandas)) // O(t)
+	itTandas <- crearIterador(tandas) // O(1)
+	indice <- 0
+	while (haySiguiente(itTandas)) { // total: O(t)
+		tanda <- Siguiente(itTandas) // referencia a la lista (O(1))
+		if (no vacia(tanda)) { // O(1)
+			particip <- Primero(tanda) // O(1)
+			tanda <- Fin(tanda) // Fin es O(1)
+			unoPorTanda[indice] <- < particip.id, particip.tiempo, itTandas > // O(1)
+			indice <- indice + 1 // O(1)
+		}
+		Avanzar(itTandas) // O(1)
+	}
+	heapConParticipantes <- heapify(unoPorTanda) // minHeap en O(t)
+	for i in 0..p { 						// total: O(p * log t)
+		infoParticipante <- dameMin(heapConParticipantes) // O(log t)
+		// recuerdo: infoParticipante tiene <id, tiempo, iterador>
+		p <- CrearParticipante(infoParticipante.id, infoParticipante.tiempo) // O(1)
+		res.agregarAlFinal(p) // O(1)
+		// Ahora actualizo el heap
+		tanda <- Siguiente(infoParticipante.iterador) // referencia a la lista O(1)
+		if (no vacia(tanda)) {
+			nuevoParticip <- Primero(tanda) // O(1)
+			tanda <- Fin(tanda) // O(1)
+			// mantengo el iterador a la posici ́on de la tanda
+			// (que se mantiene por m ́as que cambien los participantes que contiene)
+			infoNuevoParticip <- CrearTupla(nuevoParticip.id, nuevoParticip.tiempo, infoParticipante.iterador) // O(1)
+			agregar(heapConParticipantes, infoNuevoParticipante) // O(log t)
+			}
+		}
+	}
+Para el heap, usamos la siguiente funcion de comparacion:
+compararTuplas(in t1: tupla, t2: tupla) -> res: tupla {
+	if(t2[1] < t1[1]){
+		res <- t2
+	} else {
+	res <- t1
+	}
+}
+
+COMPLEJIDAD Y CORRECTITUD
+El algoritmo se divide en tres partes:
+• Crear el array con los T primeros, que tiene un costo de O(t) de crear el
+array y sacar el 1ro de cada tanda porque tengo acceso directo (es decir,
+saco el 1ro de t tandas)
+• Hacer el heapify, que tiene costo O(t) como vimos en la teorica
+• Sacar p veces el min elem del heap (costo O(log t)) y meter el nuevo de la
+tanda que corresponde (O(log(t))). Como se hace p veces, es O(p.log(t))
+Como siempre saco el minimo del heap, y siempre tengo el siguiente valor a
+sacar de cada una de las tandas, al finalizar el algoritmo saque los primeros p
+de todas las tandas.
+De este modo, si sumamos los costos, nuestro algoritmo tiene una complejidad
+de O(t + t + p.log(t) = O(t + p.log(t))
+2) Inciso B
+Para poder generar dos listas con p profesionales y p amateurs, primero debo
+dividir las listas: para cada tanda, genero una lista con sus profesionales y otra
+con sus amateurs.
+De esta forma, luego corro el algoritmo original primeros(p, tandasProfesionales)
+y primeros(p, tandasAmateurs) y obtengo ambas listas.
+El costo es el de recorrer todas las tandas (O(n), con n participantes totales)
+y luego, el de utilizar 2 veces el algoritmo primeros.
+Es decir: O(n + 2.(t + p.log(t)) = O(n + t + p.log(t)) que es, si tenemos
+en cuenta que n ≥ t, O(n + p.log(t))

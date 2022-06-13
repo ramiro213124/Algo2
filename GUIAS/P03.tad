@@ -1,0 +1,109 @@
+// Ex 2 
+Representación:
+	polinomio se representa con estr donde 
+		estr es tupla ⟨	grado:	nat,
+										coef: array[0,...,n]⟩
+---
+a) Definir el rep y el abs
+
+rep: estr -> bool
+rep(e) ≡ e.grado = n ∧ e.coef[e.grado] > 0
+
+abs : estr e -> polinomio  // Hecho sobre generadores del TAD Polinomio
+abs(e) ≡ p: polinomio / construirPolinomio(e,0)
+
+ConstruirPolinomio(e, i) ≡ if i = e.grado then
+														Cte(e.coef [i])
+														else
+														Cte(e.coef [i]) + X * ConstruirPolinomio(e, i + 1)
+														fi
+
+// Ex 5
+Representación:
+	banco se reprenseta con estr donde
+			estr es tupla ⟨ entraron: conj(persona),
+											fila: cola(persona),
+											colados: conj(persona),
+											atendidos: conj(persona) ⟩
+ Donde: - Entraron es un conjunto con todas las personas que alguna vez estuvieron en la fila
+ 				- Colados son las personas que estan actualmente en la fila y se colaron al llegar
+				- Atendidos son las personas que fueron atendidas en el banco
+---
+Rep: estr -> bool
+rep(e) ≡ e.entraron ∩ e.colados = Ø ∧ e.entraron ⊆ e.atendidos 
+
+abs: estr -> banco
+abs(e) ≡ b: banco / 
+// Ex 6
+Alto fiesta
+
+TAD AltaFiesta
+observadores basicos
+	invitadosPendientes : AltaFiesta -> conj(Persona)
+	regalos : AltaFiesta -> conj(Regalo)
+	personasPorRegalo : AltaFiesta a × Regalo r -> conj(Persona) {r ∈ regalos(a)}
+	grupoMasNumeroso : AltaFiesta -> Grupo
+generadores
+	iniciarFiesta : conj(Persona) invitados -> AltaFiesta
+	lleganInvitados : AltaFiesta a × conj(Persona) c × Grupo g × Regalo r -> AltaFiesta	{c ⊆ invitadosPendientes(a) ∧ r ∈ regalos(a)}
+axiomas
+...
+Fin TAD
+
+Representación:
+altafiesta se representa con estr
+donde estr es tupla ⟨invitados: conj(persona),
+ 										 presentes: cola(persona), 
+										 grupoDe: dicc(grupo,conj(persona)),
+										 regaloDeGrupo: dicc(grupo, regalo), 
+										 grupoMasNumeroso: grupo⟩
+Donde grupo, persona y regalo son string
+---
+Informalmente, esta representacion cumple las siguiente propiedades:
+- En invitados estan todos los invitados a la fiesta, incluyendo tambien a aquellos que ya llegaron.
+- En presentes estan los invitados que ya llegaron a la fiesta.
+- En grupoDe se encuentra, para cada identificador de grupo i, las personas que al llegar agrupadas se
+identificaron como i.
+- En regaloDeGrupo se encuentra que regalo trajo cada grupo.
+- grupoMasNumeroso contiene al identificador del grupo de mas personas. En caso de empate, contiene al
+lexicograficamente menor de los empatados (se asume que la funcion < (de string) esta definida).
+
+REP:
+Mirando uno por uno por separado:
+invitados: Puede ser cualquier conjunto, no hace falta pedirle nada
+presentes: Puede ser cualquier cola, no hace falta pedirle nada
+grupoDe: Mirando grupoDe sí hay algo que no debe pasar, ¡una persona no puede estar en más de un grupo!
+regaloDeGrupo: De manera similar, dos grupos no pueden traer el mismo regalo (puede verse en la restricción
+de lleganInvitados).
+grupoMasNumeroso: Puede ser cualquier grupo.
+
+1. La intersección entre cualquier par de conjuntos de personas en grupoDe debe ser vacia
+2. No puede haber ningún par de grupos en regaloDeGrupo cuyo regalo sea el mismo
+Una vez analizado esto, podemos continuar tomando campos de a pares y ver que condiciones deben cumplirse
+para que su información sea consistente:
+3. Los presentes deben estar incluidos en invitados
+4. Las personas en presentes deben ser exactamente las mismas que en grupoDe
+5. Las claves de grupoDe deben ser las mismas que las de regaloDeGrupo
+6. grupoMasNumeroso es un grupo válido
+7. grupoMasNumeroso debe ser efectivamente el grupo más numeroso (y de haber varios, debe ser el lexicográfica-
+mente mínimo)
+
+rep: estr -> bool
+rep(e) ≡ 1) ∧ 2) ∧ 3) ∧ 4) ∧ 5) ∧ 6) ∧ 7)
+1)2)
+(∀ g,g': grupo)({g,g'} ⊂ claves(e.gruposDe) ∧ g != g') ⇒L 
+								(obtener(g,e.grupoDe) ∩ obtener(g', e.grupoDe) = Ø) ∧
+								(obtener(g,e.regalosDeGrupo) != obtener(g', e.regalosDeGrupo))
+3) (∀ p:persona)(esta?(p,e.presentes) ⇒L p ∈ e.invitados)
+4) (∀ p:persona)(esta?(p,e.presentes) ↔ (∃g:grupo)(g ∈ claves(e.gruposDe) ∧ p ∈ obtener(g,e.gruposDe))
+5) claves(e.gruposDe) = claves(e.regaloDeGrupo)
+6) e.grupoMasNumeroso ∈ claves(e.gruposDe)
+7) (∀ g: grupo)(g ∈ claves(e.gruposDe)) ⇒L
+								(#obtener(g,e.gruposDe) < #obtener(e.grupoMasNumeroso, e.gruposDe) V
+								(#obtener(g,e.gruposDe) = #obtener(e.grupoMasNumeroso, e.gruposDe) ∧ e.gruposDe <=(de string) g)
+
+abs: estr -> altafiesta
+abs(e) ≡ a: AltaFiesta / 
+					invitadosPendientes(a) = e.invitados
+					grupoMasNumeroso(a) = e.grupoMasNumeroso
+					

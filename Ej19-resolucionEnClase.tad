@@ -1,0 +1,107 @@
+TAD Zona es Nat
+TAD Paquete es Tupla(Zona, Nat)
+TAD Cartero es Tupla(String, Zona)
+
+TAD OficinaPostal
+	Igualdad Observacional:( (∀o, o': oficina)( o =obs o' ↔ 
+																									carteros(o) =obs carteros(o') ∧L
+																									deposito(o) =obs deposito(o') ∧L
+																									(∀c:cartero)(c ∈ carteros(o) ⇒L estaEntregando?(o,c) =obs estaEntregando?(o',c) ∧L
+																									(∀c:cartero)(c ∈ carteros(o) ∧ estaEntregando?(o,c) ⇒L paquetesEnEntrega(o,c) =obs paquetesEnEntrega(o',c)) ∧L
+																									paquetesRebotados(o) =obs paquetesRebotados(o')
+																						));
+	Géneros: oficina
+	Exporta: oficina, observadores, generadores, otras operaciones
+	Usa: Bool, Nat, Multiconjunto(α), Conj(α), Zona, Cartero, Paquete
+	
+	Observadores Básicos:
+		carteros: oficina → conj(cartero)
+		deposito: oficina → multiconj(paquete)
+		estaEntregando?: oficina o x cartero c → bool               {c ∈ carteros(o)}
+		paquetesEnEntrega: oficina x cartero c → multiconj(paquetes) {c ∈ carteros(o) ∧L estaEntregando?(o, c)}
+		paquetesRebotados: oficina → nat
+		
+	Generadores:
+		abrirOficina: conj(cartero) → oficina
+		recibirCargamento: oficina o x multiconj(paquete) → oficina
+		salirAEntregar: oficina o x cartero c → oficina                            {c ∈ carteros(o) ∧L ¬estaEntregando?(o, c)}
+		terminarEntrega: oficina o x cartero c x multiconj(paquetes) m → oficina   {c ∈ carteros(o) ∧L estaEntregando?(o, c) ∧ m ⊆ paquetesEnEntrega(o, c)}
+		
+	Otras Operaciones:
+		paquetesEnDeposito: oficina → nat
+		zonas: oficina → conj(zona)
+		recorrerZonas: conj(carteros) → conj(zonas)
+		filtrarPaquetes: oficina x multiconj(paquete) → multiconj(paquetes)
+		
+		paquetesRetirados: multiconj(paquetes) x nat x zona → multiconj(paquetes)
+	Axiomas:
+	
+		paquetesRetirados(m, n, z) = 
+		if ¬Ø?(m)
+		  then Ø
+			else 
+				if π₁(dameUno(m)) =obs z ∧ π₂(dameUno(m)) ≤ n
+					then Ag(dameUno(m), paquetesRetirados(sinUno(m), n - π₂(dameUno(m)), z))
+					else paquetesRetirados(sinUno(m), n, z)
+				fi
+		fi
+		
+		filtrarPaquetes(o, m) = 
+		if Ø?(m)
+			then Ø
+			else filtrarPaquetes(o, sinUno(m)) ∪
+				if π₁(dameUno(m)) ∈ zonas(o)
+					then {dameUno(m)}
+					else Ø
+				fi
+		fi
+		
+		zonas(o) = recorrerZonas(carteros(o))
+		recorrerZonas(c) = 
+		if Ø?(c)
+			then Ø
+			else Ag(π₂(dameUno(c)), recorrerZonas(sinUno(c)))
+		fi
+		
+		carteros(abrirOficina(c)) ≡ c
+		carteros(recibirCargamento(o, m)) = carteros(o)
+		carteros(salirAEntregar(o, c)) = carteros(o)
+		carteros(terminarEntrega(o, c, m)) = carteros(o) - 
+		if m =obs paquetesEnEntrega(o, c)
+			then {c}
+			else Ø
+		fi
+		
+		deposito(abrirOficina(c)) = Ø 
+		deposito(recibirCargamento(o, m)) = deposito(o) ∪ filtrarPaquetes(carteros(o), m)
+		deposito(salirAEntregar(o, c)) = deposito(o) - paquetesRetirados(deposito(o), 25, π₂(c)) // se asume que tenemos la operacion -
+		deposito(terminarEntrega(o, c, m)) = deposito(o) ∪ m
+		
+		estaEntregando?(abrirOficina(c), c') = false
+		estaEntregando?(recibirCargamento(o, m), c') = estaEntregando?(o, c') 
+		estaEntregando?(salirAEntregar(o, c), c') = 
+		if c =obs c'
+			then true
+			else estaEntregando?(o, c') 
+		fi
+		estaEntregando?(terminarEntrega(o, c, m), c') =
+		if c =obs c'
+			then false
+			else estaEntregando?(o, c') 
+		fi
+		 
+		paquetesEnEntrega(recibirCargamento(o, m), c') = paquetesEnEntrega(o, c')
+		paquetesEnEntrega(salirAEntregar(o, c), c') = 
+		if c =obs c'
+			then paquetesRetirados(deposito(o), 25, π₂(c'))
+			else paquetesEnEntrega(o, c')
+		fi
+		paquetesEnEntrega(terminarEntrega(o, c, m), c') = // c es distinto a c'
+																											paquetesEnEntrega(o, c')
+																													
+		paquetesRebotados(abrirOficina(c)) = 0
+		paquetesRebotados(recibirCargamento(o, m)) = paquetesRebotados(o)
+		paquetesRebotados(salirAEntregar(o, c)) = paquetesRebotados(o)
+		paquetesRebotados(terminarEntrega(o, c, m)) = paquetesRebotados(o) + #m
+				
+Fin TAD

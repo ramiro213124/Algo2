@@ -1,0 +1,87 @@
+Me interesa modelar un restaurante donde lo importante es cuanta gente hay.
+
+TAD Restaurante
+
+géneros resto
+
+usa nat
+
+igualdad observacional
+∀ r1, r2 : resto (r1 =obs r2) ⇔ (cantPersonas(r1) = cantPersonas(r2))
+
+generadores
+nuevoRestaurante: → resto
+ingresarPersona: resto → resto
+egresarPersona: resto → resto
+
+observadores
+cantPersonas: resto → nat
+
+axiomas
+cantPersonas(nuevoRestaurante   ) ≡ 0
+cantPersonas(ingresarPersona(r) ) ≡ suc(cantPersonas(r))
+cantPersonas(egresarPersona(r)  ) ≡ pred(cantPersonas(r))
+
+
+Valores
+
+nuevoRestaurante
+
+ingresarPersona(nuevoRestaurante)
+
+ingresarPersona(   ingresarPersona(nuevoRestaurante))
+
+egresarPersona(ingresarPersona(ingresarPersona(nuevoRestaurante)))
+
+r1 == ingresarPersona(egresarPersona(ingresarPersona(nuevoRestaurante)))
+
+cantPersonas(r1) ≡
+cantPersonas(ingresarPersona(egresarPersona(ingresarPersona(nuevoRestaurante))))
+suc(cantPersonas(egresarPersona(ingresarPersona(nuevoRestaurante)))) ≡
+suc(pred(cantPersonas(ingresarPersona(nuevoRestaurante))))
+suc(pred(suc(cantPersonas(nuevoRestaurante))))
+suc(pred(suc(0)))
+
+
+-----
+
+Me interesa modelar un restaurante donde lo importante es cuanta gente hay en
+cada mesa.
+
+TAD Restaurante2
+
+géneros resto2
+
+igualdad observacional
+∀ r1, r2: resto2, n: nat 
+(r1 =obs r2) ⇔ (
+    cantMesas(r1) = cantMesas(r2) 
+    ∧l (n < cantMesas(r1)) ⇒ cantGenteEnMesa(r1, n) = cantGenteEnMesa(r2, n))
+)
+
+observadores
+cantGenteEnMesa: resto2 × nat → nat
+cantMesas: resto2 → nat
+
+generadores
+nuevoRestaurante: nat → resto2
+ingresarPersona: resto2 r × nat n → resto2
+    {n < cantMesas(r)}
+egresarPersona: resto2 r × nat n → resto2
+    {n < cantMesas(r) ∧ cantGenteEnMesa(r, n) >= 1}
+
+axiomas
+cantMesas(nuevoRestaurante(c)) ≡ c
+cantMesas(ingresarPersona(r, n)) ≡ cantMesas(r)
+cantMesas(egresarPersona(r, n)) ≡ cantMesas(r)
+cantGenteEnMesa(nuevoRestaurante(c), n') ≡ 0
+cantGenteEnMesa(ingresarPersona(r, n), n') ≡ 
+    if n' = n
+    then cantGenteEnMesa(r, n) + 1
+    else cantGenteEnMesa(r, n')
+    fi
+cantGenteEnMesa(egresarPersona(r, n), n') ≡ 
+    if n' = n
+    then cantGenteEnMesa(r, n) - 1
+    else cantGenteEnMesa(r, n')
+    fi

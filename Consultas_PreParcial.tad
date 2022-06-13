@@ -1,0 +1,64 @@
+TAD Persona es String
+TAD Red
+	Igualdad Observacional:(∀ r₁,r₂: red, ∀ p: persona
+		r₁ =obs r₂ ↔ 
+			op2
+			
+			integrantes(r₁) = integrantes(r₂)
+			expulsados(r₁) = expulsados(r₂)
+			
+			)
+		
+		
+		
+		);
+	Géneros: red
+	Exporta: red, observadores, generadores, 
+	Usa: Bool, Nat
+	
+	Observadores Básicos:
+		integrantes:	red r -> dicc(persona,conj(persona))
+		expulsados: red r -> conj(persona)
+	Generadores:
+		iniciar:	persona p		-> red
+		invitar: 	persona p1 x persona p2 x red r -> red {p1 ∈ claves(integrantes(r)) ∧ p2 ∉ claves(integrantes(r)) ∧ p2 ∉ expulsados(r)}
+		enjuiciar: persona p x red r -> red r {p ∈ claves(integrantes(r)) ∧ #claves(integrantes(r)) ≥ 3}
+		//recibe tribunal?
+		absolver: persona p x red r -> red r {p ∈ expulsados(r)}
+		
+	Otras Operaciones:
+		otra:	nombreTad t × nat n	-> bool 	{ n ≥ 1 }
+	Axiomas:
+	
+		integrantes(iniciar(p)) ≡ definir(p,[],vacio)
+		integrantes(invitar(p,p',r)) ≡ agregarATodos(p',{p},integrantes(r))
+		
+		agregarATodos(p',cp,d) ≡ if Ø?(cp) then
+			d
+		else
+			agregarATodos(p',obener(dameUno(cp),d) ∪ sinUno(cp) , definir(dameUno(cp),obtener(dameUno(cp),d) ∪ {p'}))
+		fi
+		
+		//definir(p',[],definir(p,Ag(p',obtener(p,integrantes(r))),integrantes(r)),integrantes(r))
+		
+		
+		integrantes(enjuiciar(p,r)) ≡ 
+		if hayQueExpulsar(p,r) then
+			expulsar(p,r)
+		else
+			integrantes(r)
+		fi
+		
+		hayQueExpulsar(p,r) ≡ ¬ sonMayoriaSeguidores(dameAcotado(3,claves(integrantes)),p,r)
+		
+		sonMayoriaSeguidores(cs,p,r) ≡ alMenosDosEn(cs,obtener(p,integrantes(r)))
+		
+		alMenosDosEn(cs1,cs2) ≡ #(cs1 ∩ cs2)≥2
+		
+		expulsar(p,r) ≡ sacarTodos(p ∪ obtener(p,integrantes(r)),integrantes(r))
+
+		sacarTodos(cp,d) ≡ if Ø?(cp) then d else borrar(dameUno(cp),sacarTodos(sinUno(cp) ∪ obtener(dameUno(cp),d),d)) fi 
+		
+		integrantes(absolver(p,r)) ≡ integrantes(r)
+		
+Fin TAD

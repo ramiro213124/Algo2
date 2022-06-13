@@ -1,0 +1,152 @@
+TAD Vehiculo es String
+TAD Cabina es Nat
+
+TAD PeajesDelZar
+	Igualdad Observacional:( (∀p,p': peaje)(p =obs p' ↔ #cabinas(p) =obs #cabinas(p') ∧L
+																										precios(p) =obs precios(p') ∧L
+																										maxAutosEnFila(p) =obs maxAutosEnFila(p') ∧
+																										(∀c: cabina)(1 ≤ c ≤ #cabinas(p) ⇒L fila(p, c) =obs fila(p', c)) ∧L
+																										(∀c: cabina)(1 ≤ c ≤ #cabinas(p) ⇒L facturado(p, c) =obs facturado(p', c)) ∧L 
+																										(∀c: cabina)(1 ≤ c ≤ #cabinas(p) ⇒L pasaronPor(p, c) =obs pasaronPor(p', c))	);
+	Géneros: peaje
+	Exporta: peaje, observadores, generadores, Otras Operaciones
+		
+	Usa: Bool, Nat, dicc(α, β), cola(α), multiconj(α), conj(α)
+	
+	Observadores Básicos:
+		maxAutosEnFila: peaje → nat
+		precios: peaje → dicc(vehiculo, nat)
+		#cabinas: peaje → nat
+		fila: peaje p x cabina c → cola(vehiculo)
+			{1 ≤ c ≤ #cabinas(p)}
+		facturado: peaje p x cabina c → nat
+			{1 ≤ c ≤ #cabinas(p)}
+		pasaronPor: peaje p x cabina c → multiconj(vehiculo)
+			{1 ≤ c ≤ #cabinas(p)}
+				
+	Generadores:
+		nuevoPeaje: nat c x nat m x dicc(vehiculo, nat) d → peaje 
+			{m > 0 ∧ ¬Ø?(claves(d)) ∧ c > 0}
+			
+		llegaVehículo: peaje p x vehículo v x cabina c → peaje
+			{1 ≤ c ≤ #cabinas(p) ∧ def?(v, precios(p)) }
+			
+		atenderVehiculo: peaje p x cabina c → peaje 
+			{ 1 ≤ c ≤ #cabinas(p) ∧L ¬vacia?(fila(p, c)) }
+
+		
+	Otras Operaciones:
+		cabinasAcaparanVehículo: peaje p x vehiculo v → conj(cabina)
+			{def?(v, precios(p))}		
+		
+		retirarLaMitad: cola(vehiculo) → cola(vehiculo)
+		desencolarHasta: cola(vehiculo) c x nat a x nat b → cola(vehiculo)
+			{a + b = tamaño(c)}
+			
+		obtenerLaMitad: cola(vehiculos) → multiconj(vehiculo)
+		obtenerHasta: cola(vehiculo) x nat a x nat b → multiconj(vehiculo)
+			{a + b = tamaño(c)}
+			
+		recorrerCabinas: peaje p x vehiculo v x cabina c → conj(cabina)
+			{def?(v, precios(p)) ∧ 1 ≤ c ≤ #cabinas(p) + 1}
+			
+		maximaCantidadPosible: peaje p x vehiculo v x cabina c → nat
+			{def?(v, precios(p)) ∧ 1 ≤ c ≤ #cabinas(p)}
+			
+	Axiomas:
+		
+		maxAutosEnFila(nuevoPeaje(c, m, d)) = m
+		maxAutosEnFila(llegaVehículo(p, v, c)) = maxAutosEnFila(p)
+		maxAutosEnFila(atenderVehiculo(p, c)) = maxAutosEnFila(p)
+		
+		precios( nuevoPeaje(c, m, d) ) = d
+		precios( llegaVehículo(p, v, c) ) = precios(p)
+		precios( atenderVehiculo(p, c) ) = precios(p)
+		
+		#cabinas( nuevoPeaje(c, m, d) ) = c
+		#cabinas( llegaVehículo(p, v, c) ) = #cabinas(p)
+		#cabinas( atenderVehiculo(p, c) ) = #cabinas(p)
+		
+		fila( nuevoPeaje(c, m, d), c' ) = vacía()
+		fila( llegaVehículo(p, v, c), c' ) =
+		if tamaño(fila(p,c)) =obs maxAutosEnFila(p)
+			then
+				if c =obs c'
+					then retirarLaMitad( encolar(v, fila(p, c')) )
+					else retirarLaMitad( fila(p, c') )
+				fi
+			else 
+				if c =obs c'
+					then encolar(v, fila(p, c'))
+					else fila(p, c')
+				fi
+		fi
+		
+		fila( atenderVehiculo(p, c), c' ) = 
+		if c =obs c'
+			then desencolar( fila(p, c') )
+			else fila(p, c') //La fila de c' es la misma que antes de que se
+												// atendiera un auto en c
+		fi
+		
+		retirarLaMitad(c) = desencolarHasta(c, 0, tamaño(c))
+		desencolarHasta(c, retirados, presentes)=
+		if retirados ≥ presentes
+			then c
+			else desencolarHasta(desencolar(c), retirados+1, presentes-1) 
+		fi
+		
+		facturado( nuevoPeaje(c, m, d), c' ) = 0
+		facturado( llegaVehículo(p, v, c), c' ) = facturado(p, c')
+		facturado( atenderVehiculo(p, c), c' ) = facturado(p, c') +
+		if c =obs c'
+			then obtener( próximo(fila(p, c')) , precios(p) )
+			else 0
+		fi
+		
+		pasaronPor( nuevoPeaje(c, m, d), c') = Ø	
+		pasaronPor( llegaVehículo(p, v, c), c') = 
+		if tamaño(fila(p,c)) =obs maxAutosEnFila(p)
+			then pasaronPor(p, c') ∪
+				if c =obs c'
+					then obtenerLaMitad( encolar(v, fila(p, c')) )
+					else obtenerLaMitad(fila(p, c'))
+				fi
+			else 
+				pasaronPor(p, c')
+		fi
+		
+		
+		pasaronPor( atenderVehiculo(p, c), c') = 
+		if c =obs c'
+			then Ag( próximo(fila(p, c')) , pasaronPor(p, c'))
+			else pasaronPor(p, c')
+		fi
+		
+		obtenerLaMitad(c) = obtenerHasta(c, 0, tamaño(c))
+		obtenerHasta(c, metidos, noMetidos) =
+		if metidos ≥ noMetidos
+			then Ø
+			else Ag(proximo(c), obtenerHasta(desencolar(c), metidos+1, noMetidos-1))
+		fi
+		
+		cabinasAcaparanVehículo(p, v) = recorrerCabinas(p, v, 1)
+		recorrerCabinas(p, v, cabinaActual) = 
+		if cabinaActual =obs #cabinas(p) + 1
+			then Ø
+			else 
+				if #(v, pasaronPor(p, cabinaActual)) =obs maximaCantidadPosible(p, v, 1)
+					then Ag(cabinaActual, recorrerCabinas(p, v, cabinaActual+1))
+					else recorrerCabinas(p, v, cabinaActual+1)
+				fi
+		fi 
+		
+		maximaCantidadPosible(p, v, cabinaActual) =
+		if cabinaActual =obs #cabinas(p) 
+			then #(v, pasaronPor(p, cabinaActual))
+			else max(#(v, pasaronPor(p, cabinaActual)), 
+							 maximaCantidadPosible(p, v, cabinaActual + 1))
+		fi
+			
+		
+Fin TAD

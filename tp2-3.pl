@@ -80,6 +80,8 @@ caminoAux(I, F, T, Visitadas, [I | XS]) :- vecinoLibre(I, T, Vecino),
 
   Camino si es reversible.
 
+  Todas las combinaciones?
+
   */
 
 
@@ -104,12 +106,12 @@ camino2(I, F, T, C) :-  % Encuentra todos los caminos posibles entre Inicio y Fi
   CORREGIR/REVISAR
 
   Inicio no es reversible porque si no esta instanciada, al unificar con el predicado vecinoLibre/3 (que pide que este instanciada)
-  en la regla que verifica si una posición es vecina en la misma fila, se suma 1 a la columna actual (C2 is C + 1). 
+  en la regla que verifica si una posición es vecina en la misma fila, se suma 1 a la columna actual (F2 is F + 1). 
   Sin embargo, al sumar 1 a una variable no instanciada, Prolog no puede determinar si el  resultado será menor que el número
   de columnas del tablero, ya que no puede realizar operaciones aritméticas con variables no instanciadas. 
   Esto provoca que la regla falle y, en consecuencia, el predicado vecinoLibre/3 también falle, lo que afecta la reversibilidad de camino/4.
 
-  Me suena a que camino no es reversible.
+  Camino es reversible.
 
 */
 

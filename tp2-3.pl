@@ -17,11 +17,6 @@ longColumnas(C,Lista) :- length(Lista,C).
 % Instancia Tablero[F][C] = ocupada
 ocupar(pos(F,C),T):- nth0(F,T,X), nth0(C,X,ocupada).
 
-% Tableros de ejemplo:
-tablero(ej5x5, T) :- tablero(5, 5, T), ocupar(pos(1, 1), T), ocupar(pos(1, 2), T).
-tablero(ej2x2, T) :- tablero(2, 2, T), ocupar(pos(0, 0), T), ocupar(pos(0, 1), T).
-tablero(libre20, T) :- tablero(20, 20, T).
-
 %% --------------------------- Ejercicio 3 -------------------------------------
 %% vecino(+Pos, +Tablero, -PosVecino) será verdadero cuando PosVecino sea
 %% un átomo de la forma pos(F', C') y pos(F',C') sea una celda contigua a
@@ -77,20 +72,21 @@ caminoAux(I, F, T, Visitadas, [I | XS]) :- vecinoLibre(I, T, Vecino),
 %% 5.1. Analizar la reversibilidad de los parámetros Fin y Camino justificando adecuadamente en cada
 %% caso por qué el predicado se comporta como lo hace
   /*
-  Inicio no es reversible porque si no esta instanciada, al unificar con el predicado vecinoLibre/3 (que pide que este instanciada)
-  en la regla que verifica si una posición es vecina en la misma fila, se suma 1 a la columna actual (C2 is C + 1). 
-  Sin embargo, al sumar 1 a una variable no instanciada, Prolog no puede determinar si el  resultado será menor que el número
-  de columnas del tablero, ya que no puede realizar operaciones aritméticas con variables no instanciadas. 
-  Esto provoca que la regla falle y, en consecuencia, el predicado vecinoLibre/3 también falle, lo que afecta la reversibilidad de camino/4.
+
+  CORREGIR/REVISAR
 
   Fin sí es reversible ya que, como el tablero es finito, los caminos son finitos y en cada paso siempre se recorre sin repetir posiciones
   visitadas, eventualmente va a probar con todas las posiciones válidas y por cada una devolverá un camino C valido.
+
+  Camino si es reversible.
+
   */
 
 
 %% --------------------------- Ejercicio 6 -------------------------------------
 %% camino2(+Inicio, +Fin, +Tablero, -Camino) ídem camino/4 pero que las soluciones
 %% se instancien en orden creciente de longitud.
+
 
 camino2(I, F, T, C) :-  % Encuentra todos los caminos posibles entre Inicio y Fin en el tablero T,
                         % junto con la longitud de cada camino, y los guarda en la lista Caminos.
@@ -101,13 +97,20 @@ camino2(I, F, T, C) :-  % Encuentra todos los caminos posibles entre Inicio y Fi
                         % Extrae un camino C de la lista ordenada de caminos.
                         member((C, _), CaminosOrdenados).
 
-
 %% 6.1. Analizar la reversibilidad de los parámetros Inicio y Camino justificando adecuadamente en
 %% cada caso por qué el predicado se comporta como lo hace.
 
 /*
- Inicio debe estar intanciado por el mismo motivo que Inicio en camino/4
- Fin puede no estarlo por el mismo motivo que Fin en camino/4
+  CORREGIR/REVISAR
+
+  Inicio no es reversible porque si no esta instanciada, al unificar con el predicado vecinoLibre/3 (que pide que este instanciada)
+  en la regla que verifica si una posición es vecina en la misma fila, se suma 1 a la columna actual (C2 is C + 1). 
+  Sin embargo, al sumar 1 a una variable no instanciada, Prolog no puede determinar si el  resultado será menor que el número
+  de columnas del tablero, ya que no puede realizar operaciones aritméticas con variables no instanciadas. 
+  Esto provoca que la regla falle y, en consecuencia, el predicado vecinoLibre/3 también falle, lo que afecta la reversibilidad de camino/4.
+
+  Me suena a que camino no es reversible.
+
 */
 
 %% --------------------------- Ejercicio 7 -------------------------------------
@@ -128,21 +131,63 @@ hayMasCorto(I, F, T, Long) :- camino(I, F, T, C), length(C, Long2), Long2 < Long
 %% cuando Camino sea un camino desde Inicio hasta Fin pasando al mismo tiempo
 %% sólo por celdas transitables de ambos tableros.
 
-caminoDual(I, F, T1, T2, C) :- camino(I, F, T1, C1), camino(I, F, T2, C2), mismoCamino(C1, C2, C).
-
-% mismoCamino(+Camino1, +Camino2, -Camino)
-mismoCamino(C1, C2, C) :- mismoCaminoAux(C1, C2, [], C). % El tercer parametro sera para posiciones visitadas de C1
-
-% mismoCaminoAux(+Camino1, +Camino2, +CaminoParcial, -Camino)
-mismoCaminoAux([], _, C, C).      % Cuando termino de recorrer el Camino1 el caminoParcial sera el camino C y coincide con el Camino2
-% En CaminoParcial me guardo las posiciones que recorri de Camino1 que coinciden con las de Camino2 hasta llegar al final
-mismoCaminoAux([Pos|XS], C2, CaminoParcial, C) :- member(Pos, C2), 
-                                                  append(CaminoParcial, [Pos], NuevoCaminoParcial), 
-                                                  mismoCaminoAux(XS, C2, NuevoCaminoParcial, C).
+caminoDual(I, F, T1, T2, C) :- camino(I,F,T1,C), camino(I,F,T2,C).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%                               TESTS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Tableros de ejemplo:
+tablero(ej5x5, T) :- tablero(5, 5, T), ocupar(pos(1, 1), T), ocupar(pos(1, 2), T).
+/*
+
+ .  .  .  .  .
+ .  X  X  .  .
+ .  .  .  .  .
+ .  .  .  .  .
+ .  .  .  .  .
+
+*/
+tablero(ej5x5_2, T) :- tablero(5, 5, T), ocupar(pos(0, 2), T), ocupar(pos(2,1), T), ocupar(pos(3,1), T), ocupar(pos(3,2),T).
+/*
+
+ .  .  X  .  .
+ .  .  .  .  .
+ .  X  .  .  .
+ .  X  X  .  .
+ .  .  .  .  .
+
+*/
+
+tablero(ej2x2, T) :- tablero(2, 2, T), ocupar(pos(0, 0), T), ocupar(pos(0, 1), T).
+/*
+
+ X  X  
+ .  .  
+
+*/
+tablero(ej3x3_bloqueado, T) :- tablero(3, 3, T), ocupar(pos(1, 0), T), ocupar(pos(1, 1),T), ocupar(pos(1, 2), T).
+/*
+
+ .  .  . 
+ X  X  X  
+ .  .  .  
+
+*/
+
+% Auxiliares:
+
+% prefijo(?P, +L), donde P es prefijo de la lista L.
+prefijo(X,L) :- append(X,_,L).
+
+% sufijo(?S, +L), donde S es sufijo de la lista L.
+sufijo(X,L) :- append(_,X,L).
+
+% sublista(?L1,+L2).
+sublista([],_).
+sublista([S|SS],L) :- sufijo(X,L), prefijo([S|SS],X).
+
+% ------------------------------------------------------------------
 
 cantidadTestsTablero(6). 
 testTablero(1) :- tablero(0,0,[]).
@@ -151,7 +196,7 @@ testTablero(3) :- tablero(1,1,[[_]]).
 testTablero(4) :- tablero(2,2,[[_,_],[_,_]]).
 testTablero(5) :- tablero(4,2,[[_,_],[_,_],[_,_],[_,_]]).
 testTablero(6) :- ocupar(pos(1,1),[[_,_],[_,ocupada],[_,_],[_,_]]).
-
+% ------------------------------------------
 
 cantidadTestsVecino(6).
 testVecino(1) :- vecino(pos(0,0), [[_,_]], pos(0,1)).
@@ -165,29 +210,67 @@ testVecino(4) :- tablero(2, 2, T), vecino(pos(0, 0), T, pos(1, 0)).
 testVecino(5) :- tablero(2, 2, T), vecino(pos(1, 0), T, pos(0, 0)).
 % No hay vecino fuera de los límites
 testVecino(6) :- tablero(1, 1, T), not(vecino(pos(0, 0), T, _)).
-
-
+% ------------------------------------------
 cantidadTestsVecinoLibre(3).
 % Vecino libre a la derecha
 testVecinoLibre(1) :- tablero(2, 2, T), vecinoLibre(pos(0, 0), T, pos(0, 1)).
 % Vecino libre arriba
 testVecinoLibre(2) :- tablero(2, 2, T), ocupar(pos(0, 1), T), vecinoLibre(pos(0, 0), T, pos(1, 0)).
-% No hay vecino libre fuera de los límites
+% No hay vecino libre fuera de los límites del tablero
 testVecinoLibre(3) :- tablero(1, 1, T), not(vecinoLibre(pos(0, 0), T, _)).
 
+% ------------------------------------------
+cantidadTestsCamino(3).
+% Camino sencillo en tablero 2x2
+testCamino(1) :- tablero(2, 2, T),
+                 camino(pos(0, 0), pos(1, 1), T, C),
+                 member(C, [[pos(0, 0), pos(1, 0), pos(1, 1)], [pos(0, 0), pos(0, 1), pos(1, 1)]]).
+% Camino más largo en tablero 3x3
+testCamino(2) :- tablero(3, 3, T),
+                 camino(pos(0, 0), pos(2, 2), T, C),
+                 % Verifica que el camino encontrado sea una secuencia válida de movimientos
+                 CaminoEsperado = [pos(0, 0), pos(0, 1), pos(0, 2), pos(1, 2), pos(2, 2)],
+                 sublista(CaminoEsperado, C).
+
+% No hay camino posible debido a ocupaciones
+testCamino(3) :- tablero(ej3x3_bloqueado, T), not(camino(pos(0, 0), pos(2, 2), T, _)).
+
+% ------------------------------------------
+cantidadTestsCaminoOptimo(3).
+
+% Camino óptimo en tablero 2x2
+testCaminoOptimo(1) :-
+    tablero(2, 2, T),
+    caminoOptimo(pos(0, 0), pos(1, 1), T, C),
+    member(C, [[pos(0, 0), pos(1, 0), pos(1, 1)], [pos(0, 0), pos(0, 1), pos(1, 1)]]).
+
+% Camino óptimo en tablero 3x3
+testCaminoOptimo(2) :-
+    tablero(3, 3, T),
+    caminoOptimo(pos(0, 0), pos(2, 2), T, Camino),
+    length(Camino, 5).  % El camino óptimo tendrá longitud 5
+
+% No hay camino óptimo posible debido a ocupaciones
+testCaminoOptimo(3) :- tablero(ej3x3_bloqueado, T), not(caminoOptimo(pos(0, 0), pos(2, 2), T, _)).
+
+% ------------------------------------------
+cantidadTestsCaminoDual(2).
+
+% Camino dual en tableros idénticos 2x2
+testCaminoDual(1) :-
+    tablero(2, 2, T1),
+    tablero(2, 2, T2),
+    caminoDual(pos(0, 0), pos(1, 1), T1, T2, [pos(0, 0), pos(0, 1), pos(1, 1)]).
+
+% Camino dual en tableros diferentes
+testCaminoDual(2) :-
+    tablero(ej5x5, T1),
+    tablero(ej5x5_2, T2),
+    caminoDual(pos(0, 0), pos(4, 3), T1, T2, Camino),
+    Camino = [pos(0, 0), pos(1,0), pos(2,0), pos(3,0), pos(4,0),pos(4,1),pos(4,2),pos(4,3)].
 
 
-cantidadTestsCamino(0). % Actualizar con la cantidad de tests que entreguen
-% Agregar más tests
-testCamino(1).
 
-cantidadTestsCaminoOptimo(0). % Actualizar con la cantidad de tests que entreguen
-% Agregar más tests
-testCaminoOptimo(1).
-
-cantidadTestsCaminoDual(0). % Actualizar con la cantidad de tests que entreguen
-% Agregar más tests
-testCaminoDual(1).
 
 tests(tablero) :- cantidadTestsTablero(M), forall(between(1,M,N), testTablero(N)).
 tests(vecino) :- cantidadTestsVecino(M), forall(between(1,M,N), testVecino(N)).
